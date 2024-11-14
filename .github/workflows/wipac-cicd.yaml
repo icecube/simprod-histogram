@@ -22,7 +22,7 @@ jobs:
       - id: versions
         uses: WIPACrepo/wipac-dev-py-versions-action@v2.5
         with:
-          range: ">=3.10"
+          range: ">=3.12"
 
   flake8:
     needs: [ py-versions ]
