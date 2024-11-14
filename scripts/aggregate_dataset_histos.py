@@ -146,9 +146,7 @@ def _main(args: argparse.Namespace) -> None:
     for histo in agg_histograms.values():
         histo.update(
             {
-                "bin_values": [
-                    x / histo["_sample_count"] for x in histo["bin_values"]  # type: ignore=attr-defined
-                ],
+                "bin_values": [x / histo["_sample_count"] for x in histo["bin_values"]],  # type: ignore
             }
         )
 
