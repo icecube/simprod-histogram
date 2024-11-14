@@ -123,6 +123,7 @@ def test_300__aggregate_histograms():
 
         # Save mock histogram to dataset
         histo_file = dataset_path / "histos/0.pkl"
+        histo_file.parent.mkdir(exist_ok=True)
         with open(histo_file, "wb") as f:
             pickle.dump(sample_histograms, f)
 
