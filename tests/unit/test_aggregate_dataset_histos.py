@@ -1,17 +1,19 @@
 """Tests for aggregate_dataset_histos.py"""
 
-import sys
-
 import argparse
-import h5py  # type: ignore
 import json
 import pickle
-import pytest
+import sys
 import tempfile
 from pathlib import Path
 
+import h5py  # type: ignore
+import pytest
+
+# Add the project root to sys.path
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
+
 from scripts.aggregate_dataset_histos import (  # noqa: E402
     _main,
     get_job_histo_files,
@@ -48,6 +50,8 @@ def test_200__update_aggregation_matching_histogram():
         "name": "PrimaryEnergy",
         "xmin": 0.0,
         "xmax": 10.0,
+        "overflow": 0,
+        "underflow": 0,
         "nan_count": 5,
         "bin_values": [1.0, 2.0, 3.0],
         "_sample_count": 1,
@@ -56,6 +60,8 @@ def test_200__update_aggregation_matching_histogram():
         "name": "PrimaryEnergy",
         "xmin": 2.0,
         "xmax": 8.0,
+        "overflow": 0,
+        "underflow": 0,
         "nan_count": 2,
         "bin_values": [0.5, 1.5, 2.5],
     }
@@ -72,11 +78,21 @@ def test_200__update_aggregation_matching_histogram():
 def test_210__update_aggregation_histogram_length_mismatch():
     existing = {
         "name": "PrimaryEnergy",
+        "xmin": 0.0,
+        "xmax": 10.0,
+        "overflow": 0,
+        "underflow": 0,
+        "nan_count": 5,
         "bin_values": [1.0, 2.0],
         "_sample_count": 1,
     }
     new = {
         "name": "PrimaryEnergy",
+        "xmin": 2.0,
+        "xmax": 8.0,
+        "overflow": 0,
+        "underflow": 0,
+        "nan_count": 2,
         "bin_values": [1.0, 2.0, 3.0],  # different length
     }
     with pytest.raises(ValueError, match="bin_values list must have the same length"):
@@ -90,6 +106,8 @@ def test_300__aggregate_histograms():
             "name": "PrimaryEnergy",
             "xmin": 0.0,
             "xmax": 10.0,
+            "overflow": 0,
+            "underflow": 0,
             "nan_count": 0,
             "bin_values": [10, 20, 30],
         }
