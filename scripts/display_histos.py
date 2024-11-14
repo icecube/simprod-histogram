@@ -1,14 +1,14 @@
 """Display the histograms in a file."""
 
-import argparse
-import json
 import math
-import pickle
-from pathlib import Path
 
-import h5py
+import argparse
+import h5py  # type: ignore
+import json
 import matplotlib.pyplot as plt
 import numpy as np
+import pickle
+from pathlib import Path
 
 
 def from_hdf5(fpath: Path):

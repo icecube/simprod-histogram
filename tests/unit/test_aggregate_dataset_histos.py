@@ -1,14 +1,14 @@
 """Tests for aggregate_dataset_histos.py"""
 
+import sys
+
 import argparse
+import h5py  # type: ignore
 import json
 import pickle
-import sys
+import pytest
 import tempfile
 from pathlib import Path
-
-import h5py
-import pytest
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))

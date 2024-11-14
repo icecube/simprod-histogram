@@ -1,16 +1,16 @@
 """Aggregate the dataset's job's histograms, by sampling."""
 
+import math
+
 import argparse
+import h5py  # type: ignore
 import json
 import logging
-import math
+import numpy as np
 import pickle
 import random
 from pathlib import Path
 from typing import Iterator
-
-import h5py
-import numpy as np
 
 SKIP_KEYS = ["filelist"]
 HISTO_TYPES = [
