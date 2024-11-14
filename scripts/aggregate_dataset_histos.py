@@ -1,16 +1,16 @@
 """Aggregate the dataset's job's histograms, by sampling."""
 
-import math
-
 import argparse
-import h5py  # type: ignore
 import json
 import logging
-import numpy as np
+import math
 import pickle
 import random
 from pathlib import Path
 from typing import Iterator
+
+import h5py  # type: ignore
+import numpy as np
 
 SKIP_KEYS = ["filelist"]
 HISTO_TYPES = [
@@ -107,8 +107,6 @@ def main() -> None:
         help="the destination directory to write a json file containing aggregated histograms",
     )
     args = parser.parse_args()
-    args.path: Path  # typehint to aid IDE
-    args.dest_dir: Path  # ^^^
 
     _main(args)
 

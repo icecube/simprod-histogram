@@ -1,14 +1,14 @@
 """Display the histograms in a file."""
 
-import math
-
 import argparse
-import h5py  # type: ignore
 import json
-import matplotlib.pyplot as plt
-import numpy as np
+import math
 import pickle
 from pathlib import Path
+
+import h5py  # type: ignore
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def from_hdf5(fpath: Path):
@@ -95,7 +95,6 @@ def main():
         help="the dataset directory to grab pickled histograms",
     )
     args = parser.parse_args()
-    args.path: Path  # typehint to aid IDE
 
     # get histograms
     if args.path.suffix in [".pickle", ".pkl"]:
