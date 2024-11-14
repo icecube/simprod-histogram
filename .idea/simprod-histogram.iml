@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/ric-made-this-starting-delimeter--these-are-from-the-gitignore" />
+      <excludeFolder url="file://$MODULE_DIR$/__pycache__" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/develop-eggs" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/downloads" />
+      <excludeFolder url="file://$MODULE_DIR$/eggs" />
+      <excludeFolder url="file://$MODULE_DIR$/.eggs" />
+      <excludeFolder url="file://$MODULE_DIR$/lib" />
+      <excludeFolder url="file://$MODULE_DIR$/lib64" />
+      <excludeFolder url="file://$MODULE_DIR$/parts" />
+      <excludeFolder url="file://$MODULE_DIR$/sdist" />
+      <excludeFolder url="file://$MODULE_DIR$/var" />
+      <excludeFolder url="file://$MODULE_DIR$/wheels" />
+      <excludeFolder url="file://$MODULE_DIR$/share/python-wheels" />
+      <excludeFolder url="file://$MODULE_DIR$/*.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/htmlcov" />
+      <excludeFolder url="file://$MODULE_DIR$/.tox" />
+      <excludeFolder url="file://$MODULE_DIR$/.nox" />
+      <excludeFolder url="file://$MODULE_DIR$/.hypothesis" />
+      <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/cover" />
+      <excludeFolder url="file://$MODULE_DIR$/instance" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/_build" />
+      <excludeFolder url="file://$MODULE_DIR$/.pybuilder" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/profile_default" />
+      <excludeFolder url="file://$MODULE_DIR$/.pdm-build" />
+      <excludeFolder url="file://$MODULE_DIR$/__pypackages__" />
+      <excludeFolder url="file://$MODULE_DIR$/env" />
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/ENV" />
+      <excludeFolder url="file://$MODULE_DIR$/env.bak" />
+      <excludeFolder url="file://$MODULE_DIR$/venv.bak" />
+      <excludeFolder url="file://$MODULE_DIR$/.mypy_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.pyre" />
+      <excludeFolder url="file://$MODULE_DIR$/.pytype" />
+      <excludeFolder url="file://$MODULE_DIR$/cython_debug" />
+      <excludeFolder url="file://$MODULE_DIR$/ric-put-this-here-to-make-his-script-run-faster--gitignore-modtime-1731619940" />
+      <excludeFolder url="file://$MODULE_DIR$/ric-made-this-ending-delimeter" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

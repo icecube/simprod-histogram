@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectTasksOptions">
+    <enabled-global>
+      <option value="update-pyvenv.sh (in venv, on change)" />
+      <option value="uncomment &quot;.idea/&quot; in .gitignore" />
+      <option value="add &quot;.idea/&quot; to .gitignore" />
+      <option value="amend .gitignore dirs to pycharm exclude" />
+    </enabled-global>
+  </component>
+</project>
