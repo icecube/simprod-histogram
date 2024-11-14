@@ -95,7 +95,10 @@ def test_210__update_aggregation_histogram_length_mismatch():
         "nan_count": 2,
         "bin_values": [1.0, 2.0, 3.0],  # different length
     }
-    with pytest.raises(ValueError, match="bin_values list must have the same length"):
+    with pytest.raises(
+        ValueError,
+        match=r"'bin_values' list must have the same length: \[.*?\] \+ \[.*?\]",
+    ):
         update_aggregation(existing, new)
 
 
