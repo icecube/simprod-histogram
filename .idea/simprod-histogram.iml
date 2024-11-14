@@ -40,10 +40,11 @@
       <excludeFolder url="file://$MODULE_DIR$/.pyre" />
       <excludeFolder url="file://$MODULE_DIR$/.pytype" />
       <excludeFolder url="file://$MODULE_DIR$/cython_debug" />
-      <excludeFolder url="file://$MODULE_DIR$/ric-put-this-here-to-make-his-script-run-faster--gitignore-modtime-1731619940" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/ric-put-this-here-to-make-his-script-run-faster--gitignore-modtime-1731624079" />
       <excludeFolder url="file://$MODULE_DIR$/ric-made-this-ending-delimeter" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.12 (simprod-histogram)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
