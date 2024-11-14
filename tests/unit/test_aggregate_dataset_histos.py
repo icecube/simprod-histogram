@@ -141,6 +141,7 @@ def test_300__aggregate_histograms():
         assert json_file.exists()
         with open(json_file, "r") as f:
             data = json.load(f)
+            print(data)
             assert "PrimaryEnergy" in data
             assert data["PrimaryEnergy"]["bin_values"] == [10, 20, 30]
 
