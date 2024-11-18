@@ -137,7 +137,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@v1.8.14
         if: steps.psr-psr.outputs.released == 'true'
         with:
-          password: ${{ secrets.PYPI_TOKEN }}
+          password: ${{ secrets.WIPAC_PYPI_TOKEN }}
       # GitHub Release
       - uses: python-semantic-release/upload-to-gh-release@v9.8.1
         if: steps.psr-psr.outputs.released == 'true'
