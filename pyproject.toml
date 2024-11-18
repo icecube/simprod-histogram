@@ -20,15 +20,8 @@ email = "developers@icecube.wisc.edu"
 file = "LICENSE"
 
 [project.optional-dependencies]
-tests = [
-    "h5py",
-    "pytest",
-    "matplotlib"
-]
-display = [
-    "h5py",
-    "matplotlib"
-]
+tests = ["h5py", "pytest", "matplotlib"]
+display = ["h5py", "matplotlib"]
 
 [project.urls]
 Homepage = "https://pypi.org/project/icecube-simprod-histograms/"
