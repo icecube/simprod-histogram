@@ -10,6 +10,26 @@ on:
 jobs:
 
   ###########################################################################
+  # PACKAGING
+  ###########################################################################
+
+  py-setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - uses: WIPACrepo/wipac-dev-py-setup-action@v4.2
+        with:
+          python_min: 3.9
+          pypi_name: icecube-simprod-histograms
+          author: IceCube
+          author_email: developers@icecube.wisc.edu
+          keywords: |
+            "histogram sampling" simulation statistics
+
+
+  ###########################################################################
   # LINTERS
   ###########################################################################
 
@@ -90,7 +110,7 @@ jobs:
         with:
           python-version: ${{ matrix.py3 }}
       - run: |
-          pip install -r requirements-tests.txt
+          pip install .[tests]
       - name: Run unit tests
         run: |
           pytest -vvv tests/unit/
@@ -101,14 +121,25 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/main'
-    needs: [ flake8, mypy, code-format, unit-tests ]
+    needs: [ py-setup, flake8, mypy, code-format, unit-tests ]
     runs-on: ubuntu-latest
+    concurrency: release  # prevent any possible race conditions
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Python Semantic Release
-        uses: python-semantic-release/python-semantic-release@v7.34.6
+      # Python-Package Version Bump
+      - uses: python-semantic-release/python-semantic-release@v9.8.1
+        id: psr-psr
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      # PyPI Release
+      - uses: pypa/gh-action-pypi-publish@v1.8.14
+        if: steps.psr-psr.outputs.released == 'true'
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
+      # GitHub Release
+      - uses: python-semantic-release/upload-to-gh-release@v9.8.1
+        if: steps.psr-psr.outputs.released == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

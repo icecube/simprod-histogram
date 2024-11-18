@@ -1,2 +1,5 @@
+<!--- Top of README Badges (automated) --->
+[![PyPI](https://img.shields.io/pypi/v/icecube-simprod-histograms)](https://pypi.org/project/icecube-simprod-histograms/) [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/icecube/simprod-histogram?include_prereleases)](https://github.com/icecube/simprod-histogram/) [![Versions](https://img.shields.io/pypi/pyversions/icecube-simprod-histograms.svg)](https://pypi.org/project/icecube-simprod-histograms) [![PyPI - License](https://img.shields.io/pypi/l/icecube-simprod-histograms)](https://github.com/icecube/simprod-histogram/blob/main/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/icecube/simprod-histogram)](https://github.com/icecube/simprod-histogram/issues?q=is%3Aissue+sort%3Aupdated-desc+is%3Aopen) [![GitHub pull requests](https://img.shields.io/github/issues-pr/icecube/simprod-histogram)](https://github.com/icecube/simprod-histogram/pulls?q=is%3Apr+sort%3Aupdated-desc+is%3Aopen)
+<!--- End of README Badges (automated) --->
 # simprod-histogram
 Utilities for working with histograms created for simprod
