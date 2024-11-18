@@ -2,6 +2,13 @@
 
 
 
+## v0.0.2 (2024-11-18)
+
+###  
+
+* CI: Add Packaging - 2 ([`0dd2787`](https://github.com/icecube/simprod-histogram/commit/0dd27877ef9fa888058e844b75407d1d19c90e61))
+
+
 ## v0.0.1 (2024-11-18)
 
 ###  
