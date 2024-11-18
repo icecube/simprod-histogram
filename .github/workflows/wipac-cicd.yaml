@@ -110,7 +110,7 @@ jobs:
         with:
           python-version: ${{ matrix.py3 }}
       - run: |
-          pip install -r requirements-tests.txt
+          pip install .[tests]
       - name: Run unit tests
         run: |
           pytest -vvv tests/unit/

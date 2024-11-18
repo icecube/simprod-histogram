@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 version = "0.0.0"
-dependencies = []
+dependencies = ["h5py"]
 name = "icecube-simprod-histograms"
 description = "Utilities for working with histograms created for simprod"
 readme = "README.md"
@@ -18,6 +18,17 @@ email = "developers@icecube.wisc.edu"
 
 [project.license]
 file = "LICENSE"
+
+[project.optional-dependencies]
+tests = [
+    "h5py",
+    "pytest",
+    "matplotlib"
+]
+display = [
+    "h5py",
+    "matplotlib"
+]
 
 [project.urls]
 Homepage = "https://pypi.org/project/icecube-simprod-histograms/"
