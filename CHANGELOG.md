@@ -2,6 +2,21 @@
 
 
 
+## v0.0.3 (2024-11-19)
+
+###  
+
+* Renaming - 2 ([`73543b1`](https://github.com/icecube/simprod-histogram/commit/73543b14e645f4636335eb92c9ef80626b911d3d))
+
+* &lt;bot&gt; update README.md ([`a80a926`](https://github.com/icecube/simprod-histogram/commit/a80a926913a7c450e5bba2a3308ee837b2e0b712))
+
+* &lt;bot&gt; update pyproject.toml ([`51a6c63`](https://github.com/icecube/simprod-histogram/commit/51a6c63ce2cfe129ed3b576b146bb9cb36382f13))
+
+### R
+
+* Renaming ([`a44ffc7`](https://github.com/icecube/simprod-histogram/commit/a44ffc79e5eeaacb3a52360763841440e6291981))
+
+
 ## v0.0.2 (2024-11-18)
 
 ###  
