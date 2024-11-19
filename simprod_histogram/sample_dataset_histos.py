@@ -1,7 +1,6 @@
 """Aggregate the dataset's job's histograms by sampling."""
 
 import argparse
-import json
 import logging
 import math
 import pickle
@@ -152,11 +151,7 @@ def _main(args: argparse.Namespace) -> None:
 
     #
     # write out sampled (averaged) histos
-    # -> json
-    with open(args.dest_dir / f"{args.path.name}.json", "w") as f:
-        json.dump(sampled_histos, f)  # don't indent
-    # -> hdf5
-    with h5py.File(args.dest_dir / f"{args.path.name}.hdf5", "w") as f:
+    with h5py.File(args.dest_dir / f"{args.path.name}.histo.hdf5", "w") as f:
         for histo_type, histo in sampled_histos.items():
             group = f.create_group(histo_type)
             for k, v in histo.items():

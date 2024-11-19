@@ -1,7 +1,6 @@
 """Tests for sample_dataset_histos.py"""
 
 import argparse
-import json
 import pickle
 import sys
 import tempfile
@@ -138,15 +137,7 @@ def test_300__aggregate_histograms():
         _main(args=args)
 
         # Check output JSON and HDF5 files
-        json_file = output_dir / "sample_dataset.json"
-        assert json_file.exists()
-        with open(json_file, "r") as f:
-            data = json.load(f)
-            print(data)
-            assert "PrimaryEnergy" in data
-            assert data["PrimaryEnergy"]["bin_values"] == [10, 20, 30]
-
-        hdf5_file = output_dir / "sample_dataset.hdf5"
+        hdf5_file = output_dir / "sample_dataset.histo.hdf5"
         assert hdf5_file.exists()
         with h5py.File(hdf5_file, "r") as f:
             assert "PrimaryEnergy" in f
