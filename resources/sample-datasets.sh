@@ -14,6 +14,16 @@ NUM_DATASETS=$3
 BASE_PATH=${4:-"/data/sim/IceCube"}
 
 #######################################################################################
+# setup python virtual environment, install the package
+
+PYVENV="simprod-histogram-pyvenv"
+pip install virtualenv
+python -m virtualenv $PYVENV
+. $PYVENV/bin/activate &&
+    pip install --upgrade pip &&
+    pip install --no-cache-dir icecube-simprod-histogram
+
+#######################################################################################
 # pre-calculate depth-to-datasets arg for 'find'
 
 # like /data/sim/IceCube/<year>/<generated>/<neutrino-generator>/<dataset_id>
@@ -62,7 +72,7 @@ find "$BASE_PATH" -mindepth "$depth_to_datasets" -maxdepth "$depth_to_datasets" 
     # Process the dataset
     echo "Processing dataset: $dataset_dir"
     error_output=$(
-        python path/to/your/script.py \
+        python -m simprod_histogram.sample_dataset_histos \
             "$dataset_dir" \
             --sample-percentage "$SAMPLE_PERCENTAGE" \
             --dest-dir "$DEST_DIR" \
