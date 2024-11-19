@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 version = "0.0.2"
 dependencies = ["h5py"]
-name = "icecube-simprod-histograms"
+name = "icecube-simprod-histogram"
 description = "Utilities for working with histograms created for simprod"
 readme = "README.md"
 keywords = ["histogram sampling", "simulation", "statistics"]
@@ -25,7 +25,7 @@ mypy = ["h5py", "pytest", "matplotlib"]
 display = ["h5py", "matplotlib"]
 
 [project.urls]
-Homepage = "https://pypi.org/project/icecube-simprod-histograms/"
+Homepage = "https://pypi.org/project/icecube-simprod-histogram/"
 Tracker = "https://github.com/icecube/simprod-histogram/issues"
 Source = "https://github.com/icecube/simprod-histogram"
 
