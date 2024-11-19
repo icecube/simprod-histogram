@@ -1,4 +1,4 @@
-"""Tests for aggregate_dataset_histos.py"""
+"""Tests for sample_dataset_histos.py"""
 
 import argparse
 import json

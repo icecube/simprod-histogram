@@ -22,7 +22,7 @@ jobs:
       - uses: WIPACrepo/wipac-dev-py-setup-action@v4.2
         with:
           python_min: 3.9
-          pypi_name: icecube-simprod-histograms
+          pypi_name: icecube-simprod-histogram
           author: IceCube
           author_email: developers@icecube.wisc.edu
           keywords: |
