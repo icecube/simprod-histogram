@@ -105,12 +105,22 @@ def main() -> None:
         required=True,
         help="the destination directory to write a file containing the dataset's sampled histograms",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        default=False,
+        help="force writing the output histogram even if it would overwrite an existing one.",
+    )
     args = parser.parse_args()
 
     _main(args)
 
 
 def _main(args: argparse.Namespace) -> None:
+    outfile = args.dest_dir / f"{args.path.name}.histo.hdf5"
+    if not args.force and outfile.exists():
+        raise FileExistsError(f"{outfile} already exists")
+
     sampled_histos = {
         t: {
             "name": t,
@@ -151,7 +161,7 @@ def _main(args: argparse.Namespace) -> None:
 
     #
     # write out sampled (averaged) histos
-    with h5py.File(args.dest_dir / f"{args.path.name}.histo.hdf5", "w") as f:
+    with h5py.File(outfile, "w") as f:
         for histo_type, histo in sampled_histos.items():
             group = f.create_group(histo_type)
             for k, v in histo.items():
