@@ -30,7 +30,7 @@ HISTO_TYPES = [
 ]
 
 
-def get_job_histo_files(dataset_dir: Path, sample_percentage: float) -> Iterator[Path]:
+def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]:
     """Yield a sample of histogram files, each originating from a job."""
     sample_percentage = max(0.0, min(sample_percentage, 1.0))
 
@@ -39,7 +39,7 @@ def get_job_histo_files(dataset_dir: Path, sample_percentage: float) -> Iterator
     #         mean the files are yielded in "job-range" order. This is fine for
     #         aggregating data.
 
-    for subdir in dataset_dir.glob("*/histos"):
+    for subdir in dpath.glob("*/histos"):
         histo_files = list(subdir.glob("*.pkl"))
         random.shuffle(histo_files)  # randomly sample
         sample_size = math.ceil(len(histo_files) * sample_percentage)  # int is floor
@@ -85,6 +85,56 @@ def update_aggregation(existing: dict, new: dict) -> dict:
     return existing
 
 
+def sample_histograms(
+    dpath: Path,
+    sample_percentage: float,
+) -> dict[str, dict]:
+    """Assemble the sampled histograms from the dataset."""
+    sampled_histos = {
+        t: {
+            "name": t,
+            "xmin": float("inf"),  # any value will replace this one
+            "xmax": float("-inf"),  # any value will replace this one
+            "overflow": None,
+            "underflow": None,
+            "nan_count": 0,
+            "bin_values": [],
+            "_sample_count": 0,
+            "_sample_percentage": sample_percentage,
+            "_dataset_path": str(dpath.resolve()),
+        }
+        for t in HISTO_TYPES
+    }
+
+    i = -1
+    for i, job_file in enumerate(get_job_histo_files(dpath, sample_percentage)):
+        with open(job_file, "rb") as f:
+            contents = pickle.load(f)
+            for histo_type in contents.keys():
+                if histo_type in SKIP_KEYS:
+                    continue
+                elif histo_type not in HISTO_TYPES:
+                    logging.warning(f"unknown histogram type: {histo_type}")
+                    continue
+                # grab data
+                sampled_histos[histo_type] = update_aggregation(
+                    sampled_histos[histo_type], contents[histo_type]
+                )
+
+    if i == -1:
+        raise FileNotFoundError(f"No histogram files found in {dpath}")
+
+    # average data
+    for histo in sampled_histos.values():
+        histo.update(
+            {
+                "bin_values": [x / histo["_sample_count"] for x in histo["bin_values"]],  # type: ignore
+            }
+        )
+
+    return sampled_histos
+
+
 def main() -> None:
     """Do main."""
     parser = argparse.ArgumentParser()
@@ -121,44 +171,8 @@ def _main(args: argparse.Namespace) -> None:
     if not args.force and outfile.exists():
         raise FileExistsError(f"{outfile} already exists")
 
-    sampled_histos = {
-        t: {
-            "name": t,
-            "xmin": float("inf"),  # any value will replace this one
-            "xmax": float("-inf"),  # any value will replace this one
-            "overflow": None,
-            "underflow": None,
-            "nan_count": 0,
-            "bin_values": [],
-            "_sample_count": 0,
-            "_sample_percentage": args.sample_percentage,
-            "_dataset_path": str(args.path.resolve()),
-        }
-        for t in HISTO_TYPES
-    }
-
     # aggregate histograms into condensed samples (1 per type)
-    for job_file in get_job_histo_files(args.path, args.sample_percentage):
-        with open(job_file, "rb") as f:
-            contents = pickle.load(f)
-            for histo_type in contents.keys():
-                if histo_type in SKIP_KEYS:
-                    continue
-                elif histo_type not in HISTO_TYPES:
-                    logging.warning(f"unknown histogram type: {histo_type}")
-                    continue
-                # grab data
-                sampled_histos[histo_type] = update_aggregation(
-                    sampled_histos[histo_type], contents[histo_type]
-                )
-
-    # average data
-    for histo in sampled_histos.values():
-        histo.update(
-            {
-                "bin_values": [x / histo["_sample_count"] for x in histo["bin_values"]],  # type: ignore
-            }
-        )
+    sampled_histos = sample_histograms(args.path, args.sample_percentage)
 
     #
     # write out sampled (averaged) histos
