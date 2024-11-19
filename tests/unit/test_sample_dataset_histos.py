@@ -44,6 +44,22 @@ def test_100__get_job_histo_files_sampling():
         assert len(sampled_files) == 0  # Should sample none
 
 
+def test_110__get_job_histo_files_no_histograms():
+    # Create a temporary dataset directory without any histogram files
+    with tempfile.TemporaryDirectory() as tempdir:
+        dataset_dir = Path(tempdir)
+        subdir = dataset_dir / "job1/histos"
+        subdir.mkdir(parents=True)
+
+        # No histogram files are created in this directory structure
+
+        # Expect FileNotFoundError because there are no histogram files
+        with pytest.raises(
+            FileNotFoundError, match=f"No histogram files found in {dataset_dir}"
+        ):
+            list(get_job_histo_files(dataset_dir, sample_percentage=0.5))
+
+
 def test_200__update_aggregation_matching_histogram():
     existing = {
         "name": "PrimaryEnergy",
