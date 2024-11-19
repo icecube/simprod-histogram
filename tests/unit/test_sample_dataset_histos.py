@@ -45,9 +45,7 @@ def test_100__get_job_histo_files_sampling():
             ValueError,
             match=f"Sample size must be greater than or equal to 1 sample_percentage={0.0}.",
         ):
-            sampled_files = list(
-                get_job_histo_files(dataset_dir, sample_percentage=0.0)
-            )
+            list(get_job_histo_files(dataset_dir, sample_percentage=0.0))
 
 
 def test_110__get_job_histo_files_no_histograms():
