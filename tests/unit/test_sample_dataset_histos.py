@@ -21,6 +21,7 @@ from simprod_histogram.sample_dataset_histos import (  # noqa: E402
 
 
 def test_100__get_job_histo_files_sampling():
+    """Test sampling of histogram files with varying sample percentages."""
     # Create a temporary dataset directory with histogram files
     with tempfile.TemporaryDirectory() as tempdir:
         dataset_dir = Path(tempdir)
@@ -45,6 +46,7 @@ def test_100__get_job_histo_files_sampling():
 
 
 def test_110__get_job_histo_files_no_histograms():
+    """Test that FileNotFoundError is raised when no histogram files are found."""
     # Create a temporary dataset directory without any histogram files
     with tempfile.TemporaryDirectory() as tempdir:
         dataset_dir = Path(tempdir)
@@ -61,6 +63,7 @@ def test_110__get_job_histo_files_no_histograms():
 
 
 def test_200__update_aggregation_matching_histogram():
+    """Test updating histogram aggregation with matching histogram types."""
     existing = {
         "name": "PrimaryEnergy",
         "xmin": 0.0,
@@ -91,6 +94,7 @@ def test_200__update_aggregation_matching_histogram():
 
 
 def test_210__update_aggregation_histogram_length_mismatch():
+    """Test that ValueError is raised for bin length mismatch in aggregation."""
     existing = {
         "name": "PrimaryEnergy",
         "xmin": 0.0,
@@ -118,6 +122,7 @@ def test_210__update_aggregation_histogram_length_mismatch():
 
 
 def test_300__aggregate_histograms():
+    """Test aggregation of histograms and output to HDF5 format."""
     # Mock some sample histograms and an output directory
     sample_histograms = {
         "PrimaryEnergy": {
@@ -161,6 +166,7 @@ def test_300__aggregate_histograms():
 
 
 def test_310__aggregate_histograms_with_force():
+    """Test aggregation with force flag to overwrite existing HDF5 output."""
     # Mock some sample histograms and an output directory
     sample_histograms = {
         "PrimaryEnergy": {
