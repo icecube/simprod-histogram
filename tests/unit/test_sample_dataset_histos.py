@@ -132,6 +132,7 @@ def test_300__aggregate_histograms():
                 path=dataset_path,
                 sample_percentage=1.0,  # sample everything
                 dest_dir=output_dir,
+                force=False,
             )
         )
 
