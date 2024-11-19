@@ -3,15 +3,19 @@
 #######################################################################################
 # Check args
 
-if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]; then
-    echo "Usage: $0 <SAMPLE_PERCENTAGE> <DEST_DIR> <NUM_DATASETS> [BASE_PATH]"
+if [ "$#" -lt 3 ]; then
+    echo "Usage: $0 <BASE_PATH> <SAMPLE_PERCENTAGE> <NUM_DATASETS>"
     exit 1
 fi
 
-SAMPLE_PERCENTAGE=$1
-DEST_DIR=$2
+# set BASE_PATH -> scan all datasets under this path
+# ex: /data/sim/IceCube/2023/generated/neutrino-generator/22645
+# ex: /data/sim/IceCube/2023/generated/neutrino-generator/
+# ex: /data/sim/IceCube/2023/generated/
+BASE_PATH=$1
+
+SAMPLE_PERCENTAGE=$2
 NUM_DATASETS=$3
-BASE_PATH=${4:-"/data/sim/IceCube"}
 
 #######################################################################################
 # setup python virtual environment, install the package
@@ -63,9 +67,11 @@ find "$BASE_PATH" -mindepth "$depth_to_datasets" -maxdepth "$depth_to_datasets" 
         break
     fi
 
+    dest_dir=$dataset_dir # dataset's sampled histograms should be in dataset dir
+
     # Has this dataset been processed previously?
-    if find "$DEST_DIR" -maxdepth 1 -name "*.histo.hdf5" | read -r; then
-        echo "Skipping $dataset_dir, an output file with .histo.hdf5 extension already exists in $DEST_DIR."
+    if find "$dest_dir" -maxdepth 1 -name "*.histo.hdf5" | read -r; then
+        echo "Skipping $dataset_dir, an output file with .histo.hdf5 extension already exists in $dest_dir."
         continue
     fi
 
@@ -75,7 +81,7 @@ find "$BASE_PATH" -mindepth "$depth_to_datasets" -maxdepth "$depth_to_datasets" 
         python -m simprod_histogram.sample_dataset_histos \
             "$dataset_dir" \
             --sample-percentage "$SAMPLE_PERCENTAGE" \
-            --dest-dir "$DEST_DIR" \
+            --dest-dir "$dest_dir" \
             2>&1
     )
     exit_status=$?
