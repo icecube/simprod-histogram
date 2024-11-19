@@ -131,6 +131,7 @@ def _main(args: argparse.Namespace) -> None:
             "nan_count": 0,
             "bin_values": [],
             "_sample_count": 0,
+            "_sample_percentage": args.sample_percentage,
             "_dataset_path": str(args.path.resolve()),
         }
         for t in HISTO_TYPES
