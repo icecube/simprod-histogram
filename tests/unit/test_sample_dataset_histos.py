@@ -43,7 +43,7 @@ def test_100__get_job_histo_files_sampling():
         # Sample 0% -> error
         with pytest.raises(
             ValueError,
-            match=f"Sample size must be greater than or equal to 1 sample_percentage={0.0}.",
+            match="--sample-percentage must be between 0.0 (exclusive) and 1.0 (inclusive)",
         ):
             list(get_job_histo_files(dataset_dir, sample_percentage=0.0))
 
