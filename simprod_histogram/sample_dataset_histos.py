@@ -6,7 +6,7 @@ import math
 import pickle
 import random
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 
 import h5py  # type: ignore
 import numpy as np
@@ -30,9 +30,18 @@ HISTO_TYPES = [
 ]
 
 
+def _sample_percentage(val: Any) -> float:
+    val = float(val)
+    if val <= 0.0 or val > 1.0:
+        raise ValueError(
+            "--sample-percentage must be between 0.0 (exclusive) and 1.0 (inclusive)"
+        )
+    return val
+
+
 def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]:
     """Yield a sample of histogram files, each originating from a job."""
-    sample_percentage = max(0.0, min(sample_percentage, 1.0))
+    sample_percentage = _sample_percentage(sample_percentage)
     histos_found = False
 
     # NOTE: we're randomly sampling evenly across all "job-range" subdirectories,
@@ -149,7 +158,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--sample-percentage",
-        type=float,
+        type=_sample_percentage,
         required=True,
         help="the percentage of a dataset's histogram to be sampled (for each type)",
     )
@@ -174,11 +183,6 @@ def _main(args: argparse.Namespace) -> None:
     outfile = args.dest_dir / f"{args.path.name}.histo.hdf5"
     if not args.force and outfile.exists():
         raise FileExistsError(f"{outfile} already exists")
-
-    if args.sample_percentage <= 0.0 or args.sample_percentage > 1.0:
-        raise ValueError(
-            "--sample-percentage must be between 0.0 (exclusive) and 1.0 (inclusive)"
-        )
 
     # aggregate histograms into condensed samples (1 per type)
     sampled_histos = sample_histograms(args.path, args.sample_percentage)
