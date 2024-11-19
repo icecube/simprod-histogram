@@ -30,6 +30,10 @@ HISTO_TYPES = [
 ]
 
 
+class HistogramNotFoundError(Exception):
+    """Raised when a histogram is not found."""
+
+
 def _sample_percentage(val: Any) -> float:
     val = float(val)
     if val <= 0.0 or val > 1.0:
@@ -64,7 +68,7 @@ def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]
 
     # did the glob produce any files?
     if not histos_found:
-        raise FileNotFoundError(f"No histogram files found in {dpath}")
+        raise HistogramNotFoundError(f"No histogram files found in {dpath}")
 
 
 def update_aggregation(existing: dict, new: dict) -> dict:

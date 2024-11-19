@@ -17,6 +17,7 @@ from simprod_histogram.sample_dataset_histos import (  # noqa: E402
     _main,
     get_job_histo_files,
     update_aggregation,
+    HistogramNotFoundError,
 )
 
 
@@ -49,7 +50,7 @@ def test_100__get_job_histo_files_sampling():
 
 
 def test_110__get_job_histo_files_no_histograms():
-    """Test that FileNotFoundError is raised when no histogram files are found."""
+    """Test that HistogramNotFoundError is raised when no histogram files are found."""
     # Create a temporary dataset directory without any histogram files
     with tempfile.TemporaryDirectory() as tempdir:
         dataset_dir = Path(tempdir)
@@ -58,9 +59,9 @@ def test_110__get_job_histo_files_no_histograms():
 
         # No histogram files are created in this directory structure
 
-        # Expect FileNotFoundError because there are no histogram files
+        # Expect HistogramNotFoundError because there are no histogram files
         with pytest.raises(
-            FileNotFoundError, match=f"No histogram files found in {dataset_dir}"
+            HistogramNotFoundError, match=f"No histogram files found in {dataset_dir}"
         ):
             list(get_job_histo_files(dataset_dir, sample_percentage=0.5))
 

@@ -8,14 +8,14 @@
 #              to a destination directory in the user's home directory. It also provides
 #              an option for a dry run to preview actions without making changes.
 #
-# Usage:       cp_src_histos_tree.sh <SOURCE_DIR> [--dryrun]
+# Usage:       cp-src-histos-tree.sh <SOURCE_DIR> [--dryrun]
 #
 # Parameters:
 #     SOURCE_DIR : The source directory containing the "*/histos" directories to sample from.
 #     --dryrun   : Optional flag that, if provided, skips actual file and directory operations,
 #                  outputting actions to be taken without modifying any files.
 #
-# Example:     cp_src_histos_tree.sh /path/to/source --dryrun
+# Example:     cp-src-histos-tree.sh /path/to/source --dryrun
 #
 # Notes:
 #     - Sampling percentages for directories and files are set to 10% by default.
