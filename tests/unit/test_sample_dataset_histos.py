@@ -14,7 +14,7 @@ import pytest
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
 
-from scripts.aggregate_dataset_histos import (  # noqa: E402
+from simprod_histogram.sample_dataset_histos import (  # noqa: E402
     _main,
     get_job_histo_files,
     update_aggregation,

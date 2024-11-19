@@ -1,4 +1,4 @@
-"""Aggregate the dataset's job's histograms, by sampling."""
+"""Aggregate the dataset's job's histograms by sampling."""
 
 import argparse
 import json
@@ -104,7 +104,7 @@ def main() -> None:
         "--dest-dir",
         type=Path,
         required=True,
-        help="the destination directory to write a json file containing aggregated histograms",
+        help="the destination directory to write a file containing the dataset's sampled histograms",
     )
     args = parser.parse_args()
 
@@ -112,7 +112,7 @@ def main() -> None:
 
 
 def _main(args: argparse.Namespace) -> None:
-    agg_histograms = {
+    sampled_histos = {
         t: {
             "name": t,
             "xmin": float("inf"),  # any value will replace this one
@@ -127,7 +127,7 @@ def _main(args: argparse.Namespace) -> None:
         for t in HISTO_TYPES
     }
 
-    # build aggregated histograms
+    # aggregate histograms into condensed samples (1 per type)
     for job_file in get_job_histo_files(args.path, args.sample_percentage):
         with open(job_file, "rb") as f:
             contents = pickle.load(f)
@@ -138,12 +138,12 @@ def _main(args: argparse.Namespace) -> None:
                     logging.warning(f"unknown histogram type: {histo_type}")
                     continue
                 # grab data
-                agg_histograms[histo_type] = update_aggregation(
-                    agg_histograms[histo_type], contents[histo_type]
+                sampled_histos[histo_type] = update_aggregation(
+                    sampled_histos[histo_type], contents[histo_type]
                 )
 
     # average data
-    for histo in agg_histograms.values():
+    for histo in sampled_histos.values():
         histo.update(
             {
                 "bin_values": [x / histo["_sample_count"] for x in histo["bin_values"]],  # type: ignore
@@ -151,13 +151,13 @@ def _main(args: argparse.Namespace) -> None:
         )
 
     #
-    # write out aggregated-averaged histos
+    # write out sampled (averaged) histos
     # -> json
     with open(args.dest_dir / f"{args.path.name}.json", "w") as f:
-        json.dump(agg_histograms, f)  # don't indent
+        json.dump(sampled_histos, f)  # don't indent
     # -> hdf5
     with h5py.File(args.dest_dir / f"{args.path.name}.hdf5", "w") as f:
-        for histo_type, histo in agg_histograms.items():
+        for histo_type, histo in sampled_histos.items():
             group = f.create_group(histo_type)
             for k, v in histo.items():
                 if isinstance(v, list):
