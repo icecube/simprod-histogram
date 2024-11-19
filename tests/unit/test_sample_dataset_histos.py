@@ -2,6 +2,7 @@
 
 import argparse
 import pickle
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -44,7 +45,9 @@ def test_100__get_job_histo_files_sampling():
         # Sample 0% -> error
         with pytest.raises(
             ValueError,
-            match="--sample-percentage must be between 0.0 (exclusive) and 1.0 (inclusive)",
+            match=re.escape(
+                "--sample-percentage must be between 0.0 (exclusive) and 1.0 (inclusive)"
+            ),
         ):
             list(get_job_histo_files(dataset_dir, sample_percentage=0.0))
 
