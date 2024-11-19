@@ -47,11 +47,6 @@ def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]
             histos_found = True
 
         sample_size = math.ceil(len(histo_files) * sample_percentage)  # int is floor
-        if sample_size < 1:
-            raise ValueError(
-                f"Sample size must be greater than or equal to 1 {sample_percentage=}."
-            )
-
         logging.info(
             f"sampling {sample_percentage * 100:.1f}% of histograms in {subdir.name}"
             f"({sample_size}/{len(histo_files)} total)"
@@ -179,6 +174,11 @@ def _main(args: argparse.Namespace) -> None:
     outfile = args.dest_dir / f"{args.path.name}.histo.hdf5"
     if not args.force and outfile.exists():
         raise FileExistsError(f"{outfile} already exists")
+
+    if args.sample_percentage <= 0.0 or args.sample_percentage > 1.0:
+        raise ValueError(
+            "--sample-percentage must be between 0.0 (exclusive) and 1.0 (inclusive)"
+        )
 
     # aggregate histograms into condensed samples (1 per type)
     sampled_histos = sample_histograms(args.path, args.sample_percentage)
