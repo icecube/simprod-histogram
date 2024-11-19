@@ -33,6 +33,7 @@ HISTO_TYPES = [
 def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]:
     """Yield a sample of histogram files, each originating from a job."""
     sample_percentage = max(0.0, min(sample_percentage, 1.0))
+    histos_found = False
 
     # NOTE: we're randomly sampling evenly across all "job-range" subdirectories,
     #         this keeps memory down (iow, going dir-by-dir). However, it does
@@ -40,6 +41,7 @@ def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]
     #         aggregating data.
 
     for subdir in dpath.glob("*/histos"):
+        histos_found = True
         histo_files = list(subdir.glob("*.pkl"))
         random.shuffle(histo_files)  # randomly sample
         sample_size = math.ceil(len(histo_files) * sample_percentage)  # int is floor
@@ -48,6 +50,10 @@ def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]
             f"({sample_size}/{len(histo_files)} total)"
         )
         yield from histo_files[:sample_size]
+
+    # did the glob produce any files?
+    if not histos_found:
+        raise FileNotFoundError(f"No histogram files found in {dpath}")
 
 
 def update_aggregation(existing: dict, new: dict) -> dict:
@@ -106,7 +112,6 @@ def sample_histograms(
         for t in HISTO_TYPES
     }
 
-    i = -1
     for i, job_file in enumerate(get_job_histo_files(dpath, sample_percentage)):
         with open(job_file, "rb") as f:
             contents = pickle.load(f)
@@ -120,9 +125,6 @@ def sample_histograms(
                 sampled_histos[histo_type] = update_aggregation(
                     sampled_histos[histo_type], contents[histo_type]
                 )
-
-    if i == -1:
-        raise FileNotFoundError(f"No histogram files found in {dpath}")
 
     # average data
     for histo in sampled_histos.values():
