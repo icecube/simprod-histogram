@@ -126,15 +126,14 @@ def test_300__aggregate_histograms():
         with open(histo_file, "wb") as f:
             pickle.dump(sample_histograms, f)
 
-        # Prepare args
-        args = argparse.Namespace(
-            path=dataset_path,
-            sample_percentage=1.0,  # sample everything
-            dest_dir=output_dir,
+        # Run
+        _main(
+            args=argparse.Namespace(
+                path=dataset_path,
+                sample_percentage=1.0,  # sample everything
+                dest_dir=output_dir,
+            )
         )
-
-        # Run main aggregation
-        _main(args=args)
 
         # Check output JSON and HDF5 files
         hdf5_file = output_dir / "sample_dataset.histo.hdf5"
@@ -142,3 +141,87 @@ def test_300__aggregate_histograms():
         with h5py.File(hdf5_file, "r") as f:
             assert "PrimaryEnergy" in f
             assert list(f["PrimaryEnergy/bin_values"][:]) == [10, 20, 30]
+
+
+def test_310__aggregate_histograms_with_force():
+    # Mock some sample histograms and an output directory
+    sample_histograms = {
+        "PrimaryEnergy": {
+            "name": "PrimaryEnergy",
+            "xmin": 0.0,
+            "xmax": 10.0,
+            "overflow": 0,
+            "underflow": 0,
+            "nan_count": 0,
+            "bin_values": [10, 20, 30],
+        }
+    }
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        output_dir = Path(tempdir)
+        dataset_path = output_dir / "sample_dataset"
+        dataset_path.mkdir(parents=True)
+
+        # Save mock histogram to dataset
+        histo_file = dataset_path / "00000-00001/histos/0.pkl"
+        histo_file.parent.mkdir(parents=True)
+        with open(histo_file, "wb") as f:
+            pickle.dump(sample_histograms, f)
+
+        # Run main aggregation without --force (file should be created)
+        _main(
+            args=argparse.Namespace(
+                path=dataset_path,
+                sample_percentage=1.0,  # sample everything
+                dest_dir=output_dir,
+                force=False,  # Do not use the force flag
+            )
+        )
+
+        # Check output HDF5 file
+        hdf5_file = output_dir / "sample_dataset.histo.hdf5"
+        assert hdf5_file.exists()
+
+        # Modify the sample histograms for a different dataset
+        new_sample_histograms = {
+            "PrimaryEnergy": {
+                "name": "PrimaryEnergy",
+                "xmin": 1.0,
+                "xmax": 20.0,
+                "overflow": 1,
+                "underflow": 1,
+                "nan_count": 1,
+                "bin_values": [100, 200, 300],
+            }
+        }
+
+        # Overwrite the existing pickled file with new data
+        with open(histo_file, "wb") as f:
+            pickle.dump(new_sample_histograms, f)
+
+        # Try running again without --force; should raise an error
+        with pytest.raises(FileExistsError):
+            _main(
+                args=argparse.Namespace(
+                    path=dataset_path,
+                    sample_percentage=1.0,
+                    dest_dir=output_dir,
+                    force=False,
+                )
+            )
+
+        # Run again with --force to allow overwrite
+        _main(
+            args=argparse.Namespace(
+                path=dataset_path,
+                sample_percentage=1.0,
+                dest_dir=output_dir,
+                force=True,  # Enable force to overwrite
+            )
+        )
+
+        # Check that file was overwritten and contains new data
+        assert hdf5_file.exists()
+        with h5py.File(hdf5_file, "r") as f:
+            assert "PrimaryEnergy" in f
+            assert list(f["PrimaryEnergy/bin_values"][:]) == [100, 200, 300]
