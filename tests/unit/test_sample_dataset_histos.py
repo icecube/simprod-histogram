@@ -40,9 +40,14 @@ def test_100__get_job_histo_files_sampling():
         sampled_files = list(get_job_histo_files(dataset_dir, sample_percentage=1.0))
         assert len(sampled_files) == 10  # Should sample all 10 files
 
-        # Sample 0%
-        sampled_files = list(get_job_histo_files(dataset_dir, sample_percentage=0.0))
-        assert len(sampled_files) == 0  # Should sample none
+        # Sample 0% -> error
+        with pytest.raises(
+            ValueError,
+            match=f"Sample size must be greater than or equal to 1 sample_percentage={0.0}.",
+        ):
+            sampled_files = list(
+                get_job_histo_files(dataset_dir, sample_percentage=0.0)
+            )
 
 
 def test_110__get_job_histo_files_no_histograms():

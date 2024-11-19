@@ -42,9 +42,16 @@ def get_job_histo_files(dpath: Path, sample_percentage: float) -> Iterator[Path]
 
     for subdir in dpath.glob("*/histos"):
         histos_found = True
+
         histo_files = list(subdir.glob("*.pkl"))
         random.shuffle(histo_files)  # randomly sample
+
         sample_size = math.ceil(len(histo_files) * sample_percentage)  # int is floor
+        if sample_size < 1:
+            raise ValueError(
+                f"Sample size must be greater than or equal to 1 {sample_percentage=}."
+            )
+
         logging.info(
             f"sampling {sample_percentage * 100:.1f}% of histograms in {subdir.name}"
             f"({sample_size}/{len(histo_files)} total)"
