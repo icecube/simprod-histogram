@@ -94,7 +94,7 @@ jobs:
           git push || true
 
   ###########################################################################
-  # UNIT TESTS
+  # TESTS
   ###########################################################################
 
   unit-tests:
@@ -115,13 +115,64 @@ jobs:
         run: |
           pytest -vvv tests/unit/
 
+  test-wrapper-script:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        base_path:
+          - /tmp/data/sim/Upgrade/2022/generated/neutrino-generator/88888
+          - /tmp/data/sim/IceCube/2023/filtered/CORSIKA
+          - /tmp/data/sim/Upgrade/2022/filtered
+          - /tmp/data/sim/IceCube/2023
+          - /tmp/data/sim/Upgrade
+          - /tmp/data/sim
+        num_datasets:
+          - 1
+          - 25
+          - 10000000
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+      - name: Create a mock dataset structure
+        run: |
+          job_range_dpaths=(
+            /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}/{00-11,22-33,44-55}
+          )
+
+          # Create directories and conditionally populate files
+          for dpath in "${job_range_dpaths[@]}"; do
+            mkdir -p "$dpath"/histos/
+            # create 1-5 pkl files
+            for i in $( seq 1 "$(( (RANDOM % 5) + 1 ))" ); do
+              echo "$i" > "$target_dir/histo_$i.pkl"
+            done
+          done
+          tree /tmp/data/sim/
+
+      - name: Run script with matrix parameters
+        run: |
+          echo "Testing with base_path=${{ matrix.base_path }}, num_datasets=${{ matrix.num_datasets }}"
+          ./sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.num_datasets }}
+
+      - name: Validate script execution
+        run: |
+          # Check if the expected number of datasets are processed
+          processed_count=$(find ${{ matrix.base_path }} -name '*.histo.hdf5' | wc -l)
+          if [[ $processed_count -lt ${{ matrix.num_datasets }}} ]]; then
+            echo "Script did not process the expected number of datasets!"
+            exit 1
+          fi
+          echo "All tests passed."
+
   ###########################################################################
   # RELEASE
   ###########################################################################
 
   release:
     if: github.ref == 'refs/heads/main'
-    needs: [ py-setup, flake8, mypy, code-format, unit-tests ]
+    needs: [ py-setup, flake8, mypy, code-format, unit-tests, test-wrapper-script ]
     runs-on: ubuntu-latest
     concurrency: release  # prevent any possible race conditions
     steps:
