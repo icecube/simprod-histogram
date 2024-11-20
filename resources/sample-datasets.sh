@@ -1,8 +1,32 @@
 #!/bin/bash
 
 #######################################################################################
-# Check args
+# Script Name: sample_histograms.sh
+#
+# Description:
+# This script automates the sampling of histograms from dataset directories. It takes
+# a base directory containing simulation datasets, a sample percentage for the histograms,
+# and the number of datasets to process. It scans each dataset directory to check for
+# existing histogram files and skips any datasets that have already been processed.
+#
+# Usage:
+#   ./sample_histograms.sh <BASE_PATH> <SAMPLE_PERCENTAGE> <NUM_DATASETS>
+#
+# Arguments:
+#   <BASE_PATH>         - The root path under which all dataset directories are located.
+#                         Example paths:
+#                         /data/sim/IceCube/2023/generated/neutrino-generator/22645
+#                         /data/sim/IceCube/2023/generated/
+#   <SAMPLE_PERCENTAGE> - Percentage of histogram samples to be taken from each dataset.
+#   <NUM_DATASETS>      - Number of datasets to process in this run.
+#
+# Requirements:
+# - Python 3
+# - virtualenv
+#
+#######################################################################################
 
+# Check args
 if [ "$#" -lt 3 ]; then
     echo "Usage: $0 <BASE_PATH> <SAMPLE_PERCENTAGE> <NUM_DATASETS>"
     exit 1
