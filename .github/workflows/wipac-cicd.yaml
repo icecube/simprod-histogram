@@ -118,6 +118,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        num_datasets:
+          - 1
+          - 25
+          - 10000000
         base_path:
           - /tmp/data/sim/Upgrade/2022/generated/neutrino-generator/88888
           - /tmp/data/sim/IceCube/2023/filtered/CORSIKA
@@ -125,10 +129,6 @@ jobs:
           - /tmp/data/sim/IceCube/2023
           - /tmp/data/sim/Upgrade
           - /tmp/data/sim
-        num_datasets:
-          - 1
-          - 25
-          - 10000000
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -136,6 +136,7 @@ jobs:
         uses: actions/setup-python@v4
       - name: Create a mock dataset structure
         run: |
+          set -e
           job_range_dpaths=(
             /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}/{00-11,22-33,44-55}
           )
@@ -152,11 +153,13 @@ jobs:
 
       - name: Run script with matrix parameters
         run: |
+          set -e
           echo "Testing with base_path=${{ matrix.base_path }}, num_datasets=${{ matrix.num_datasets }}"
           ./resources/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.num_datasets }}
 
       - name: Validate script execution
         run: |
+          set -e
           # Check if the expected number of datasets are processed
           processed_count=$(find ${{ matrix.base_path }} -name '*.histo.hdf5' | wc -l)
           if [[ $processed_count -lt ${{ matrix.num_datasets }}} ]]; then
