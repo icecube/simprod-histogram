@@ -146,7 +146,7 @@ jobs:
             mkdir -p "$dpath"/histos/
             # create 1-5 pkl files
             for i in $( seq 1 "$(( (RANDOM % 5) + 1 ))" ); do
-              echo "$i" > "$target_dir/histo_$i.pkl"
+              echo "$i" > "$dpath/histo_$i.pkl"
             done
           done
           tree /tmp/data/sim/
