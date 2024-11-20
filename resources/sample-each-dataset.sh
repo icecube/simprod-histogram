@@ -80,10 +80,16 @@ print(depth)
 #######################################################################################
 # Run!
 
-export GLOBAL_ERROR_FLAG=0
+# Create a temporary file to track errors
+error_file=$(mktemp)
+echo "0" >"$error_file"
+cleanup() {
+    rm -f "$error_file"
+}
+trap cleanup EXIT
 
+# other vars
 MAX_REACHED_CODE=2
-
 num_processed=0
 
 # Define a helper function to process each dataset
@@ -122,8 +128,8 @@ process_dataset() {
         else
             echo "Error: Failed to process $dataset_dir" >&2
             echo "$error_output" >&2
-            export GLOBAL_ERROR_FLAG=1
-            return 1 # Error! Stop processing datasets
+            echo "1" >"$error_file" # Set error flag in the temporary file
+            return 1                # Error! Stop processing datasets
         fi
     else
         echo "Successfully processed $dataset_dir"
@@ -133,7 +139,7 @@ process_dataset() {
 }
 
 export -f process_dataset
-export num_processed SAMPLE_PERCENTAGE NUM_DATASETS MAX_REACHED_CODE
+export num_processed SAMPLE_PERCENTAGE NUM_DATASETS MAX_REACHED_CODE error_file
 
 # Use find with -exec to process each dataset and handle return codes
 find "$BASE_PATH" \
@@ -143,7 +149,7 @@ find "$BASE_PATH" \
     -exec bash -c 'process_dataset "$0"' {} \;
 
 # Check if any errors were flagged
-if [ "$GLOBAL_ERROR_FLAG" -ne 0 ]; then
+if [ "$(cat "$error_file")" -ne 0 ]; then
     echo "Exiting with error (see above)." >&2
     exit 1
 fi
