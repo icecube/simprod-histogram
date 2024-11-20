@@ -172,14 +172,14 @@ jobs:
           echo "Available datasets: $available_datasets"
 
           # Use the lesser of available_datasets and num_datasets for validation
-          effective_num_datasets=$(( available_datasets < ${{ matrix.max_num_datasets }} ? available_datasets : ${{ matrix.max_num_datasets }} ))
-          echo "Expected datasets: $effective_num_datasets"
+          expected_num_datasets=$(( available_datasets < ${{ matrix.max_num_datasets }} ? available_datasets : ${{ matrix.max_num_datasets }} ))
+          echo "Expected datasets: $expected_num_datasets"
 
           # Check processed count
           processed_count=$(find ${{ matrix.base_path }} -name '*.histo.hdf5' | wc -l)
           echo "Processed count: $processed_count"
 
-          if [[ $processed_count -lt $effective_num_datasets ]]; then
+          if [[ $processed_count -ne $expected_num_datasets ]]; then
             echo "Script did not process the expected number of datasets!"
             exit 1
           fi
