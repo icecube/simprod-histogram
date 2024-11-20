@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ########################################################################################
 # Script Name: Simprod Histogram Sampler

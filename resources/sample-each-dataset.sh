@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 #######################################################################################
 # This script automates the sampling of histograms from dataset directories. It takes
