@@ -127,7 +127,7 @@ jobs:
         max_num_datasets:
           - 1
           - 25
-          - 10000000
+          - 100  # aka all of them, currently, there are 48
         base_path:
           - /tmp/data/sim/Upgrade/2022/generated/neutrino-generator/88888
           - /tmp/data/sim/IceCube/2023/filtered/CORSIKA
