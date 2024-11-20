@@ -80,16 +80,19 @@ print(depth)
 
 #######################################################################################
 # Run!
+
+MAX_REACHED_CODE=2
+
 num_processed=0
 
 # Define a helper function to process each dataset
 process_dataset() {
     local dataset_dir="$1"
-    local dest_dir="$dataset_dir" # Destination directory is the dataset directory
+    local dest_dir="$dataset_dir" # put it into the dataset directory
 
     # Stop processing if the specified number of datasets has been reached
     if [ "$num_processed" -ge "$NUM_DATASETS" ]; then
-        return 2 # Signals to stop processing datasets
+        return $MAX_REACHED_CODE # Signals to stop processing datasets
     fi
 
     # Check if this dataset has been processed previously
@@ -128,7 +131,7 @@ process_dataset() {
 }
 
 export -f process_dataset
-export num_processed SAMPLE_PERCENTAGE NUM_DATASETS
+export num_processed SAMPLE_PERCENTAGE NUM_DATASETS MAX_REACHED_CODE
 
 # Use find with -exec to process each dataset and handle return codes
 find "$BASE_PATH" \
@@ -147,7 +150,7 @@ case $find_exit_status in
         echo "Error occurred during dataset processing. Exiting." >&2
         exit 1
         ;;
-    2)
+    "$MAX_REACHED_CODE")
         echo "Processing terminated after reaching the specified number of datasets."
         exit 0
         ;;
