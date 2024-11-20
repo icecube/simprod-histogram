@@ -149,7 +149,6 @@ case $find_exit_status in
         ;;
     "$MAX_REACHED_CODE")
         echo "Processing terminated after reaching the specified number of datasets."
-        exit 0
         ;;
 esac
 
