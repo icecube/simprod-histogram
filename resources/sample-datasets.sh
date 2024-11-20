@@ -59,7 +59,7 @@ print(depth)
 
 num_processed=0
 
-# iterate over each dataset using as little memory as possible
+# iterate over each dataset
 find "$BASE_PATH" -mindepth "$depth_to_datasets" -maxdepth "$depth_to_datasets" -type d | while read -r dataset_dir; do
 
     # Stop processing if the specified number of datasets has been reached
