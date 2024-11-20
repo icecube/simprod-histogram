@@ -80,41 +80,40 @@ print(depth)
 
 #######################################################################################
 # Run!
-
 num_processed=0
 
-# iterate over each dataset
-find "$BASE_PATH" -mindepth "$depth_to_datasets" -maxdepth "$depth_to_datasets" -type d | while read -r dataset_dir; do
+# Define a helper function to process each dataset
+process_dataset() {
+    local dataset_dir="$1"
+    local dest_dir="$dataset_dir" # put into the dataset dir
 
     # Stop processing if the specified number of datasets has been reached
     if [ "$num_processed" -ge "$NUM_DATASETS" ]; then
-        break
+        exit 0
     fi
 
-    dest_dir=$dataset_dir # dataset's sampled histograms should be in dataset dir
-
-    # Has this dataset been processed previously?
+    # Check if this dataset has been processed previously
     if find "$dest_dir" -maxdepth 1 -name "*.histo.hdf5" | read -r; then
         echo "Skipping $dataset_dir, an output file with .histo.hdf5 extension already exists in $dest_dir."
-        continue
+        return 0
     fi
 
     # Process the dataset
     echo "Processing dataset: $dataset_dir"
-    error_output=$(
+    local error_output=$(
         python -m simprod_histogram.sample_dataset_histos \
             "$dataset_dir" \
             --sample-percentage "$SAMPLE_PERCENTAGE" \
             --dest-dir "$dest_dir" \
             2>&1
     )
-    exit_status=$?
+    local exit_status=$?
 
     # Check if the subprocess exited with an error
     if [ "$exit_status" -ne 0 ]; then
         if echo "$error_output" | grep -q "HistogramNotFoundError"; then
             echo "Warning: HistogramNotFoundError for $dataset_dir, skipping."
-            continue
+            return 0
         else
             echo "Error: Failed to process $dataset_dir" >&2
             echo "$error_output" >&2
@@ -122,12 +121,20 @@ find "$BASE_PATH" -mindepth "$depth_to_datasets" -maxdepth "$depth_to_datasets" 
         fi
     else
         echo "Successfully processed $dataset_dir"
+        num_processed=$((num_processed + 1))
     fi
+}
 
-    # Increment the counter for processed datasets
-    num_processed=$((num_processed + 1))
+export -f process_dataset
+export num_processed SAMPLE_PERCENTAGE NUM_DATASETS
 
-done
+# Use find with -exec to process each dataset
+# Note: this will automatically exit when the specified number of datasets is reached.
+find "$BASE_PATH" \
+    -mindepth "$depth_to_datasets" \
+    -maxdepth "$depth_to_datasets" \
+    -type d \
+    -exec bash -c 'process_dataset "$0"' {} \;
 
 #######################################################################################
 
