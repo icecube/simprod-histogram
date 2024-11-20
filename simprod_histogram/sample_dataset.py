@@ -78,7 +78,7 @@ def update_aggregation(existing: dict, new: dict) -> dict:
     """
     if new["name"] != existing["name"]:
         logging.warning(
-            f"new histogram '{new["name"]}' does not match existing histogram '{existing['name']}'"
+            f"new histogram '{new['name']}' does not match existing histogram '{existing['name']}'"
         )
 
     def new_bin_values():
@@ -87,7 +87,7 @@ def update_aggregation(existing: dict, new: dict) -> dict:
         if len(existing["bin_values"]) != len(new["bin_values"]):
             raise ValueError(
                 f"'bin_values' list must have the same length: "
-                f"{existing["bin_values"]} + {new["bin_values"]}"
+                f"{existing['bin_values']} + {new['bin_values']}"
             )
         return [a + b for a, b in zip(existing["bin_values"], new["bin_values"])]
 
