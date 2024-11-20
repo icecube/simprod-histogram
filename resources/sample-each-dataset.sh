@@ -69,7 +69,7 @@ try:
     base_index = list(path.parts).index(SIM)
 except ValueError:
     raise ValueError(f'Path {path} does not contain the base identifier {SIM}/')
-segments_after_base = path_parts[base_index + 1:]
+segments_after_base = path.parts[base_index + 1:]
 
 depth = N_SEGMENTS_BASE_TO_DATASET - len(segments_after_base)
 if depth < 0:
