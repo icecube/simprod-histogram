@@ -80,6 +80,8 @@ print(depth)
 #######################################################################################
 # Run!
 
+export GLOBAL_ERROR_FLAG=0
+
 MAX_REACHED_CODE=2
 
 num_processed=0
@@ -120,6 +122,7 @@ process_dataset() {
         else
             echo "Error: Failed to process $dataset_dir" >&2
             echo "$error_output" >&2
+            export GLOBAL_ERROR_FLAG=1
             return 1 # Error! Stop processing datasets
         fi
     else
@@ -137,7 +140,13 @@ find "$BASE_PATH" \
     -mindepth "$depth_to_datasets" \
     -maxdepth "$depth_to_datasets" \
     -type d \
-    -exec bash -c 'process_dataset "$0" || exit 1' {} \; || exit 1
+    -exec bash -c 'process_dataset "$0"' {} \;
+
+# Check if any errors were flagged
+if [ "$GLOBAL_ERROR_FLAG" -ne 0 ]; then
+    echo "Exiting with error (see above)." >&2
+    exit 1
+fi
 
 #######################################################################################
 
