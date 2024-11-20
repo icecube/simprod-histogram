@@ -137,22 +137,7 @@ find "$BASE_PATH" \
     -mindepth "$depth_to_datasets" \
     -maxdepth "$depth_to_datasets" \
     -type d \
-    -exec bash -c '
-        process_dataset "$0"
-        exit $?  # See helper function for code meanings
-    ' {} \;
-find_exit_status=$?
-
-# Handle the exit status appropriately
-case $find_exit_status in
-    1)
-        echo "Error occurred during dataset processing. Exiting." >&2
-        exit 1
-        ;;
-    "$MAX_REACHED_CODE")
-        echo "Processing terminated after reaching the specified number of datasets."
-        ;;
-esac
+    -exec bash -c 'process_dataset "$0" || exit 1' {} \; || exit 1
 
 #######################################################################################
 
