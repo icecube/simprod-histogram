@@ -105,7 +105,7 @@ process_dataset() {
     echo "Processing dataset: $dataset_dir"
     local error_output
     error_output=$(
-        python -m simprod_histogram.sample_dataset_histos \
+        python -m simprod_histogram.sample_dataset \
             "$dataset_dir" \
             --sample-percentage "$SAMPLE_PERCENTAGE" \
             --dest-dir "$dest_dir" \
