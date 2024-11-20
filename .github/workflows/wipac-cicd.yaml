@@ -154,7 +154,7 @@ jobs:
       - name: Run script with matrix parameters
         run: |
           echo "Testing with base_path=${{ matrix.base_path }}, num_datasets=${{ matrix.num_datasets }}"
-          ./sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.num_datasets }}
+          ./resources/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.num_datasets }}
 
       - name: Validate script execution
         run: |
