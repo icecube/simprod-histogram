@@ -21,7 +21,8 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - uses: WIPACrepo/wipac-dev-py-setup-action@v4.2
         with:
-          python_min: 3.9
+          python_min: 3.11
+          python_max: 3.11
           pypi_name: icecube-simprod-histogram
           author: IceCube
           author_email: developers@icecube.wisc.edu
