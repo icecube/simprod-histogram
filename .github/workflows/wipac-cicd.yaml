@@ -122,8 +122,9 @@ jobs:
   test-wrapper-script:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        num_datasets:
+        max_num_datasets:
           - 1
           - 25
           - 10000000
@@ -160,23 +161,31 @@ jobs:
       - name: Run script with matrix parameters
         run: |
           set -euo pipefail
-          echo "Testing with base_path=${{ matrix.base_path }}, num_datasets=${{ matrix.num_datasets }}"
-          ./resources/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.num_datasets }}
+          set -x
+          ./resources/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.max_num_datasets }}
 
       - name: Validate script execution
         run: |
           set -euo pipefail
-          # Check if the expected number of datasets are processed
+          # Count available datasets in the base_path
+          available_datasets=$(find ${{ matrix.base_path }} -mindepth 1 -maxdepth 1 -type d | wc -l)
+          echo "Available datasets: $available_datasets"
+
+          # Use the lesser of available_datasets and num_datasets for validation
+          effective_num_datasets=$(( available_datasets < ${{ matrix.max_num_datasets }} ? available_datasets : ${{ matrix.max_num_datasets }} ))
+          echo "Expected datasets: $effective_num_datasets"
+
+          # Check processed count
           processed_count=$(find ${{ matrix.base_path }} -name '*.histo.hdf5' | wc -l)
           echo "Processed count: $processed_count"
-          echo "Expected count: ${{ matrix.num_datasets }}"
-          if [[ $processed_count -lt ${{ matrix.num_datasets }} ]]; then
+
+          if [[ $processed_count -lt $effective_num_datasets ]]; then
             echo "Script did not process the expected number of datasets!"
             exit 1
           fi
+
           echo "All tests passed."
-  
-  
+
   ###########################################################################
   # RELEASE
   ###########################################################################
