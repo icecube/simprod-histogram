@@ -85,22 +85,23 @@ num_processed=0
 # Define a helper function to process each dataset
 process_dataset() {
     local dataset_dir="$1"
-    local dest_dir="$dataset_dir" # put into the dataset dir
+    local dest_dir="$dataset_dir" # Destination directory is the dataset directory
 
     # Stop processing if the specified number of datasets has been reached
     if [ "$num_processed" -ge "$NUM_DATASETS" ]; then
-        exit 0
+        return 2 # Signals to stop processing datasets
     fi
 
     # Check if this dataset has been processed previously
     if find "$dest_dir" -maxdepth 1 -name "*.histo.hdf5" | read -r; then
         echo "Skipping $dataset_dir, an output file with .histo.hdf5 extension already exists in $dest_dir."
-        return 0
+        return 0 # This is okay, proceed to the next dataset
     fi
 
     # Process the dataset
     echo "Processing dataset: $dataset_dir"
-    local error_output=$(
+    local error_output
+    error_output=$(
         python -m simprod_histogram.sample_dataset_histos \
             "$dataset_dir" \
             --sample-percentage "$SAMPLE_PERCENTAGE" \
@@ -109,32 +110,48 @@ process_dataset() {
     )
     local exit_status=$?
 
-    # Check if the subprocess exited with an error
+    # Handle subprocess exit status
     if [ "$exit_status" -ne 0 ]; then
         if echo "$error_output" | grep -q "HistogramNotFoundError"; then
             echo "Warning: HistogramNotFoundError for $dataset_dir, skipping."
-            return 0
+            return 0 # This is okay, proceed to the next dataset
         else
             echo "Error: Failed to process $dataset_dir" >&2
             echo "$error_output" >&2
-            exit 1
+            return 1 # Error! Stop processing datasets
         fi
     else
         echo "Successfully processed $dataset_dir"
         num_processed=$((num_processed + 1))
+        return 0 # This is okay, proceed to the next dataset
     fi
 }
 
 export -f process_dataset
 export num_processed SAMPLE_PERCENTAGE NUM_DATASETS
 
-# Use find with -exec to process each dataset
-# Note: this will automatically exit when the specified number of datasets is reached.
+# Use find with -exec to process each dataset and handle return codes
 find "$BASE_PATH" \
     -mindepth "$depth_to_datasets" \
     -maxdepth "$depth_to_datasets" \
     -type d \
-    -exec bash -c 'process_dataset "$0"' {} \;
+    -exec bash -c '
+        process_dataset "$0"
+        exit $?  # See helper function for code meanings
+    ' {} \;
+find_exit_status=$?
+
+# Handle the exit status appropriately
+case $find_exit_status in
+    1)
+        echo "Error occurred during dataset processing. Exiting." >&2
+        exit 1
+        ;;
+    2)
+        echo "Processing terminated after reaching the specified number of datasets."
+        exit 0
+        ;;
+esac
 
 #######################################################################################
 
