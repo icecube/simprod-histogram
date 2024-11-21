@@ -209,9 +209,8 @@ jobs:
         src_path:
           - /tmp/data/sim/IceCube/2023/generated/neutrino-generator
           - /tmp/data/sim/Upgrade/2022/
-        dest_dir:
-          - /tmp/mycopy
     env:
+      DEST_DIR: /tmp/mycopy
       OLD_FILE_MODTIME: 0
     steps:
       - name: Checkout repository
@@ -231,21 +230,25 @@ jobs:
             histo="$dpath"/"$(basename $dpath).histo.hdf5"
             mkdir -p $(dirname $histo)
             touch $histo
+          
             # pre-create some of these files in the destination
             if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
               # check that this histo would be touched by the script (then only do it 25% of the time)
-              if [[ "$dpath" == "${{ matrix.src_path }}"/* ]] && (( RANDOM % 100 < 25 )); then
+              if [[ "$dpath" == "${{ matrix.src_path }}"* ]] && (( RANDOM % 100 < 25 )); then
                 relative_path="${dpath#*/sim/}"
-                dest_dataset_dir="${{ matrix.dest_dir }}/sim/$relative_path"
-                mkdir -p "$dest_dataset_dir"  
+                dest_dataset_dir="$DEST_DIR/sim/$relative_path"
+                mkdir -p "$dest_dataset_dir"
+                set -x
                 touch "$dest_dataset_dir"/"$(basename "$dest_dataset_dir").histo.hdf5"
+                set +x
               fi
             fi
+          
           done
           
           # set the oldest file's mod time
           if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
-            oldest_modtime=$(find "${{ matrix.dest_dir }}" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
+            oldest_modtime=$(find "$DEST_DIR" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
             echo "OLD_FILE_MODTIME=$oldest_modtime" >> $GITHUB_ENV
           fi
 
@@ -257,7 +260,7 @@ jobs:
       - name: Look at dest filetree (before)
         run: |
           set -euo pipefail
-          tree ${{ matrix.dest_dir }} || echo "no files here"
+          tree $DEST_DIR || echo "no files here"
 
       - name: Run script
         run: |
@@ -268,14 +271,14 @@ jobs:
             force_flag=""
           fi
           set -x
-          ./scripts/cp-dataset-histos.sh ${{ matrix.src_path }} ${{ matrix.dest_dir }} $force_flag
+          ./scripts/cp-dataset-histos.sh ${{ matrix.src_path }} $DEST_DIR $force_flag
 
       - name: Validate copied histograms
         run: |
           set -euo pipefail
 
           src_count=$(find ${{ matrix.src_path }} -name "*.histo.hdf5" | wc -l)
-          dest_count=$(find ${{ matrix.dest_dir }} -name "*.histo.hdf5" | wc -l)
+          dest_count=$(find $DEST_DIR -name "*.histo.hdf5" | wc -l)
           echo "Source histograms: $src_count"
           echo "Copied histograms: $dest_count"
           if [[ $src_count -ne $dest_count ]]; then
@@ -284,7 +287,7 @@ jobs:
           fi
           
           # check the overwriting settings
-          oldest_modtime=$(find "${{ matrix.dest_dir }}" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
+          oldest_modtime=$(find "$DEST_DIR" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
           echo "Oldest histo file modtime: $oldest_modtime"
           case "${{ matrix.prev_histos_setting }}" in
             none)
@@ -314,12 +317,12 @@ jobs:
               ;;
           esac
 
-          echo "All tests passed for src_path=${{ matrix.src_path }} and dest_dir=${{ matrix.dest_dir }}."
+          echo "All tests passed for src_path=${{ matrix.src_path }} and dest_dir=$DEST_DIR."
 
       - name: Look at dest filetree (after)
         run: |
           set -euo pipefail
-          tree ${{ matrix.dest_dir }}
+          tree $DEST_DIR
 
 
   ###########################################################################
