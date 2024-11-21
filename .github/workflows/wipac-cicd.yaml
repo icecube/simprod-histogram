@@ -222,7 +222,7 @@ jobs:
         run: |
           set -euo pipefail
           dataset_dpaths=(
-            /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}/
+            /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}
           )
 
           for dpath in "${dataset_dpaths[@]}"; do
@@ -234,6 +234,7 @@ jobs:
           
             # pre-create some of these files in the destination
             if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
+              echo "creating 'existing' histo file (25% chance)"
               # check that this histo would be touched by the script (then only do it 25% of the time)
               if [[ "$dpath" == "${{ matrix.src_path }}"* ]] && (( RANDOM % 100 < 25 )); then
                 relative_path="${dpath#*/sim/}"
@@ -242,6 +243,8 @@ jobs:
                 set -x
                 touch "$dest_dataset_dir"/"$(basename "$dest_dataset_dir").histo.hdf5"
                 set +x
+              else
+                echo "nevermind :o)"
               fi
             fi
           
