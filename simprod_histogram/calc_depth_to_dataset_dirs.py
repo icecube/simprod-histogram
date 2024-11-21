@@ -46,4 +46,4 @@ def calculate(dirpath: str) -> int:
 
 
 if __name__ == "__main__":
-    calculate(sys.argv[1])
+    print(calculate(sys.argv[1]))
