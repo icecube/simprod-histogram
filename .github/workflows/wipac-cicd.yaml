@@ -166,7 +166,7 @@ jobs:
         run: |
           set -euo pipefail
           set -x
-          ./resources/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.max_num_datasets }}
+          ./scripts/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.max_num_datasets }}
 
       - name: Validate script execution
         run: |
