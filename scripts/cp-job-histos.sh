@@ -42,9 +42,12 @@ DATASET_DIR=$(realpath "$1")
 
 # Determine if the --dryrun flag is provided
 DRYRUN=false
-if [ "$#" -gt 1 ] && [ "$2" == "--dryrun" ]; then
-    DRYRUN=true
-fi
+for arg in "$@"; do
+    if [[ $arg == "--dryrun" ]]; then
+        DRYRUN=true
+        break
+    fi
+done
 
 ########################################################################################
 
