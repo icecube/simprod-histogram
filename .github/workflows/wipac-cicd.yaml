@@ -287,15 +287,15 @@ jobs:
           echo "Oldest histo file modtime: $oldest_modtime"
           case "${{ matrix.prev_histos_setting }}" in
             none)
-              # oldest modtime should be younger than previously-stored value
-              if [[ ! $oldest_modtime -lt $OLD_FILE_MODTIME ]]; then
+              # oldest modtime should be younger (greater) than previously-stored value
+              if [[ $oldest_modtime -le $OLD_FILE_MODTIME ]]; then
                 echo "ERROR: there is an older file in here!" >&2
                 exit 1
               fi
               ;;
             overwrite)
-              # oldest modtime should be younger than previously-stored value
-              if [[ ! $oldest_modtime -lt $OLD_FILE_MODTIME ]]; then
+              # oldest modtime should be younger (greater) than previously-stored value
+              if [[ $oldest_modtime -le $OLD_FILE_MODTIME ]]; then
                 echo "ERROR: there is an older file in here! aka script didn't overwrite" >&2
                 exit 1
               fi
