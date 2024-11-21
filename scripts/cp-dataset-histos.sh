@@ -69,7 +69,7 @@ cp_histo() {
     #   src_dataset_dir  = '.../sim/IceCube/2023/generated/neutrino-generator/22645'
     #   relative_path    = 'IceCube/2023/generated/neutrino-generator/22645'
     #   dest_dataset_dir = '$DEST_DIR/sim/IceCube/2023/generated/neutrino-generator/22645'
-    local relative_path="${src_dataset_dir#"$SIM"/}"
+    local relative_path="${src_dataset_dir#*"$SIM"/}"
     local dest_dataset_dir="$DEST_DIR/$SIM/$relative_path"
     mkdir -p "$dest_dataset_dir"
 
