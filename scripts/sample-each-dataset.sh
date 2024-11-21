@@ -58,25 +58,7 @@ python -m virtualenv $PYVENV
 # ex: /data/sim/IceCube/2023/generated/neutrino-generator/22645 -> depth=0
 # ex: /data/sim/IceCube/2023/generated/neutrino-generator/ -> depth=1
 # ex: /data/sim/IceCube/2023/generated/ -> depth=2
-depth_to_datasets=$(python3 -c "
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-SIM = 'sim'
-N_SEGMENTS_BASE_TO_DATASET = 5
-
-try:
-    base_index = list(path.parts).index(SIM)
-except ValueError:
-    raise ValueError(f'Path {path} does not contain the base identifier {SIM}/')
-segments_after_base = path.parts[base_index + 1:]
-
-depth = N_SEGMENTS_BASE_TO_DATASET - len(segments_after_base)
-if depth < 0:
-    raise ValueError(f'Path {path} is too specific; the user can supply up to a dataset dir')
-print(depth)
-" "$BASE_PATH" 2>&1)
+depth_to_datasets=$(python -m simprod_histogram.calc_depth_to_dataset_dirs "$BASE_PATH" 2>&1)
 
 #######################################################################################
 # Run!
