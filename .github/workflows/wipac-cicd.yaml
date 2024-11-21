@@ -128,7 +128,7 @@ jobs:
           - 1
           - 25
           - 100  # aka all of them, currently, there are 48
-        base_path:
+        src_path:
           - /tmp/data/sim/Upgrade/2022/generated/neutrino-generator/88888
           - /tmp/data/sim/IceCube/2023/filtered/CORSIKA
           - /tmp/data/sim/Upgrade/2022/filtered
@@ -166,7 +166,7 @@ jobs:
         run: |
           set -euo pipefail
           set -x
-          ./scripts/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.max_num_datasets }}
+          ./scripts/sample-each-dataset.sh ${{ matrix.src_path }} 0.5 ${{ matrix.max_num_datasets }}
 
       - name: Validate script execution
         run: |
@@ -174,7 +174,7 @@ jobs:
           echo "Max num of datasets: ${{ matrix.max_num_datasets }}"
           
           # Count dataset directories containing at least one "*.histo.hdf5" file
-          available_datasets=$(find ${{ matrix.base_path }} -type d -regex ".*/[0-9]+-[0-9]+$" -exec dirname {} \; | sort -u | wc -l)
+          available_datasets=$(find ${{ matrix.src_path }} -type d -regex ".*/[0-9]+-[0-9]+$" -exec dirname {} \; | sort -u | wc -l)
           echo "Available datasets: $available_datasets"
 
           # Use the lesser of available_datasets and num_datasets for validation
@@ -182,7 +182,7 @@ jobs:
           echo "Expected datasets: $expected_num_datasets"
 
           # Check processed count
-          processed_count=$(find ${{ matrix.base_path }} -name '*.histo.hdf5' | wc -l)
+          processed_count=$(find ${{ matrix.src_path }} -name '*.histo.hdf5' | wc -l)
           echo "Processed count: $processed_count"
 
           if [[ $processed_count -ne $expected_num_datasets ]]; then
@@ -206,9 +206,9 @@ jobs:
           - none
           - overwrite
           - keep
-        base_path:
+        src_path:
           - /tmp/data/sim/IceCube/2023/generated/neutrino-generator
-          - /tmp/data/sim/Upgrade/2022/filtered/CORSIKA
+          - /tmp/data/sim/Upgrade/2022/
         dest_dir:
           - /tmp/mycopy
     env:
@@ -233,7 +233,8 @@ jobs:
             touch $histo
             # pre-create some of these files in the destination
             if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
-              if (( RANDOM % 100 < 25 )); then
+              # check that this histo would be touched by the script (then only do it 25% of the time)
+              if [[ "$dpath" == "${{ matrix.src_path }}"/* ]] && (( RANDOM % 100 < 25 )); then
                 relative_path="${dpath#*/sim/}"
                 dest_dataset_dir="${{ matrix.dest_dir }}/sim/$relative_path"
                 mkdir -p "$dest_dataset_dir"  
@@ -267,13 +268,13 @@ jobs:
             force_flag=""
           fi
           set -x
-          ./scripts/cp-dataset-histos.sh ${{ matrix.base_path }} ${{ matrix.dest_dir }} $force_flag
+          ./scripts/cp-dataset-histos.sh ${{ matrix.src_path }} ${{ matrix.dest_dir }} $force_flag
 
       - name: Validate copied histograms
         run: |
           set -euo pipefail
 
-          src_count=$(find ${{ matrix.base_path }} -name "*.histo.hdf5" | wc -l)
+          src_count=$(find ${{ matrix.src_path }} -name "*.histo.hdf5" | wc -l)
           dest_count=$(find ${{ matrix.dest_dir }} -name "*.histo.hdf5" | wc -l)
           echo "Source histograms: $src_count"
           echo "Copied histograms: $dest_count"
@@ -313,7 +314,7 @@ jobs:
               ;;
           esac
 
-          echo "All tests passed for base_path=${{ matrix.base_path }} and dest_dir=${{ matrix.dest_dir }}."
+          echo "All tests passed for src_path=${{ matrix.src_path }} and dest_dir=${{ matrix.dest_dir }}."
 
       - name: Look at dest filetree (after)
         run: |
