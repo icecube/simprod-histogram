@@ -221,7 +221,6 @@ jobs:
       - name: Create source dataset dirs/files
         run: |
           set -euo pipefail
-          set -x
           dataset_dpaths=(
             /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}/
           )
@@ -229,7 +228,9 @@ jobs:
           for dpath in "${dataset_dpaths[@]}"; do
             histo="$dpath"/"$(basename $dpath).histo.hdf5"
             mkdir -p $(dirname $histo)
+            set -x
             touch $histo
+            set +x
           
             # pre-create some of these files in the destination
             if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
@@ -289,6 +290,7 @@ jobs:
           # check the overwriting settings
           oldest_modtime=$(find "$DEST_DIR" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
           echo "Oldest histo file modtime: $oldest_modtime"
+          echo "Previous oldest histo file modtime: $OLD_FILE_MODTIME"
           case "${{ matrix.prev_histos_setting }}" in
             none)
               # oldest modtime should be younger (greater) than previously-stored value
