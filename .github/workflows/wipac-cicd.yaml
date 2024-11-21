@@ -156,6 +156,10 @@ jobs:
               cp "$random_file" "$dpath/histos/histo_$i.pkl"
             done
           done
+
+      - name: Look at filetree (before)
+        run: |
+          set -euo pipefail
           tree /tmp/data/sim/
 
       - name: Run script with matrix parameters
@@ -187,6 +191,11 @@ jobs:
           fi
 
           echo "All tests passed."
+
+      - name: Look at filetree (after)
+        run: |
+          set -euo pipefail
+          tree /tmp/data/sim/
 
   ###########################################################################
   # RELEASE
