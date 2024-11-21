@@ -222,6 +222,7 @@ jobs:
       - name: Create source dataset dirs/files
         run: |
           set -euo pipefail
+          set -x
           dataset_dpaths=(
             /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}/
           )
