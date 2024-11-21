@@ -2,6 +2,15 @@
 
 
 
+## v0.2.0 (2024-11-21)
+
+### [minor]
+
+* Add Copy Script [minor] (#4)
+
+Co-authored-by: github-actions &lt;github-actions@github.com&gt; ([`9f76b3d`](https://github.com/icecube/simprod-histogram/commit/9f76b3d813f7d3175eb94c6f1cb4ed24c47ad4d3))
+
+
 ## v0.1.0 (2024-11-21)
 
 ###  
