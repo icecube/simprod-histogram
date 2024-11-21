@@ -9,7 +9,7 @@ name = "icecube-simprod-histogram"
 description = "Utilities for working with histograms created for simprod"
 readme = "README.md"
 keywords = ["histogram sampling", "simulation", "statistics"]
-classifiers = ["Development Status :: 4 - Beta", "Programming Language :: Python :: 3.11"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.11"]
 requires-python = ">=3.11, <3.12"
 
 [[project.authors]]
