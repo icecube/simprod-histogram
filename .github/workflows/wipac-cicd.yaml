@@ -126,7 +126,7 @@ jobs:
       matrix:
         max_num_datasets:
           - 1
-          - 25
+          - 75
           - 100  # aka all of them, currently, there are 48
         src_path:
           - /tmp/data/sim/Upgrade/2022/generated/neutrino-generator/88888
@@ -236,9 +236,9 @@ jobs:
           
             # pre-create some of these files in the destination
             if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
-              echo "creating 'existing' histo file (25% chance)"
-              # check that this histo would be touched by the script (then only do it 25% of the time)
-              if [[ "$dpath" == "${{ matrix.src_path }}"* ]] && (( RANDOM % 100 < 25 )); then
+              echo "creating 'existing' histo file (75% chance)"
+              # check that this histo would be touched by the script (then only do it 75% of the time)
+              if [[ "$dpath" == "${{ matrix.src_path }}"* ]] && (( RANDOM % 100 < 75 )); then
                 relative_path="${dpath#*/sim/}"
                 dest_dataset_dir="$DEST_DIR/sim/$relative_path"
                 mkdir -p "$dest_dataset_dir"
