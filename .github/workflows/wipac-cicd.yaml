@@ -256,7 +256,7 @@ jobs:
       - name: Look at dest filetree (before)
         run: |
           set -euo pipefail
-          tree ${{ matrix.dest_dir }}
+          tree ${{ matrix.dest_dir }} || echo "no files here"
 
       - name: Run script
         run: |
