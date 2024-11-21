@@ -247,7 +247,7 @@ jobs:
                 mkdir -p "$dest_dataset_dir"
                 set -x
                 touch "$dest_dataset_dir"/"$(basename "$dest_dataset_dir").histo.hdf5"
-                (( precreate_ct++ ))
+                (( ++precreate_ct ))
                 set +x
               fi
             fi
