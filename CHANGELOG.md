@@ -2,6 +2,21 @@
 
 
 
+## v0.1.0 (2024-11-21)
+
+###  
+
+* &lt;bot&gt; update pyproject.toml ([`9c25d71`](https://github.com/icecube/simprod-histogram/commit/9c25d71df2373530b0a98dfb9ad5964ae4b1db03))
+
+* &lt;bot&gt; update pyproject.toml ([`371a7d9`](https://github.com/icecube/simprod-histogram/commit/371a7d98ccc7e324ab22afed13ac0a8ed0e658bc))
+
+### [minor]
+
+* Output File Updates; Add Wrapper Script [minor] (#3)
+
+Co-authored-by: github-actions &lt;github-actions@github.com&gt; ([`2f3d37e`](https://github.com/icecube/simprod-histogram/commit/2f3d37e295e11ef037aa16d20f71c53cfda63f9b))
+
+
 ## v0.0.3 (2024-11-19)
 
 ###  
