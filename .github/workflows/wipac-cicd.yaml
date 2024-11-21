@@ -246,7 +246,7 @@ jobs:
                 touch "$dest_dataset_dir"/"$(basename "$dest_dataset_dir").histo.hdf5"
                 set +x
               else
-                echo "nevermind :o)"
+                echo "no file made :o)"
               fi
             fi
           
@@ -256,6 +256,7 @@ jobs:
           if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
             oldest_modtime=$(find "$DEST_DIR" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
             echo "OLD_FILE_MODTIME=$oldest_modtime" >> $GITHUB_ENV
+            sleep 5 # wait b/c the test can take < 1 sec 
           fi
 
       - name: Look at src filetree (before)
