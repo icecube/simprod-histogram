@@ -226,6 +226,8 @@ jobs:
           )
 
           for dpath in "${dataset_dpaths[@]}"; do
+            echo
+            echo "adding: $dpath"
             histo="$dpath"/"$(basename $dpath).histo.hdf5"
             mkdir -p $(dirname $histo)
             set -x
