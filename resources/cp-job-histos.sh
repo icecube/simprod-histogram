@@ -2,26 +2,28 @@
 set -euo pipefail
 
 ########################################################################################
-# Script Name: Simprod Histogram Sampler
+# Script Name: Simprod Job Histogram Copier
 #
-# Description: This script samples a subset of directories and files from a specified
-#              source directory, preserving the directory structure, and copies them
-#              to a destination directory in the user's home directory. It also provides
-#              an option for a dry run to preview actions without making changes.
+# Description: This script copies a percentage of directories and `.pkl` files from
+#              "*/histos" directories in the specified source directory. These
+#              "histos" directories contain **job-level histograms**, not dataset-level
+#              histograms. The script preserves the directory structure while copying
+#              the data to a destination directory in the user's home folder. An option
+#              for a dry run is provided to preview the actions without making any changes.
 #
-# Usage:       cp-src-histos-tree.sh <SOURCE_DIR> [--dryrun]
+# Usage:       cp-job-histos.sh <SOURCE_DIR> [--dryrun]
 #
 # Parameters:
-#     SOURCE_DIR : The source directory containing the "*/histos" directories to sample from.
+#     SOURCE_DIR : The source directory containing the "*/histos" directories to copy from.
 #     --dryrun   : Optional flag that, if provided, skips actual file and directory operations,
 #                  outputting actions to be taken without modifying any files.
 #
-# Example:     cp-src-histos-tree.sh /path/to/source --dryrun
-#
 # Notes:
-#     - Sampling percentages for directories and files are set to 10% by default.
+#     - Copy-percentages for directories and files are set to 10% by default.
 #     - A README.md summary file is created in the destination directory, logging
-#       the source information, sampling parameters, and resulting file statistics.
+#       the source information, parameters, and resulting file statistics.
+#     - This script only handles job histograms (e.g., `.pkl` files within the
+#       "*/histos" directories) and excludes dataset histograms.
 ########################################################################################
 
 if [ "$#" -lt 1 ]; then
@@ -40,7 +42,7 @@ SOURCE_DIR=$(realpath "$1")
 
 # Determine if the --dryrun flag is provided
 DRYRUN=false
-if [ "$2" == "--dryrun" ]; then
+if [ "$#" -gt 1 ] && [ "$2" == "--dryrun" ]; then
     DRYRUN=true
 fi
 
@@ -49,16 +51,16 @@ fi
 # Assign the source directory and force destination to the user's home directory
 DEST_DIR=$(realpath "$HOME/simprod-histograms") # Define the destination under the user's home directory
 
-dir_sample_percentage=0.1  # 10% of directories
-file_sample_percentage=0.1 # 10% of .pkl files in each selected directory
+dir_copy_percentage=0.1  # 10% of directories
+file_copy_percentage=0.1 # 10% of .pkl files in each selected directory
 
 ########################################################################################
 
-echo "Starting the sampling and copying process for Simprod Histograms..."
+echo "Starting the copying process for Simprod Job Histograms..."
 echo "Source directory: $SOURCE_DIR"
 echo "Destination directory: $DEST_DIR"
 echo "Dry run: $DRYRUN"
-echo "Sampling $(echo "$dir_sample_percentage * 100" | bc)% of directories and $(echo "$file_sample_percentage * 100" | bc)% of .pkl files within each directory."
+echo "Copying $(echo "$dir_copy_percentage * 100" | bc)% of directories and $(echo "$file_copy_percentage * 100" | bc)% of .pkl files within each directory."
 
 # Prepare the destination directory
 if [ "$DRYRUN" == true ]; then
@@ -67,15 +69,15 @@ else
     mkdir -p "$DEST_DIR"
 fi
 
-# Initialize counters for sampled directories and files
-sampled_dir_count=0
-sampled_file_count=0
+# Initialize counters for copied directories and files
+copied_dir_count=0
+copied_file_count=0
 
-# Find all directories matching "*/histos" and sample 10% of them
+# Find all directories matching "*/histos" and copy a percentage of them
 total_dirs=$(find "$SOURCE_DIR" -type d -path "*/histos" | wc -l)
-sampled_dirs=$(echo "$total_dirs * $dir_sample_percentage" | bc | awk '{print int($1+0.5)}')
+dirs_to_copy=$(echo "$total_dirs * $dir_copy_percentage" | bc | awk '{print int($1+0.5)}')
 
-find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$sampled_dirs" | while read -r subdir; do
+find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$dirs_to_copy" | while read -r subdir; do
     # Calculate the relative path from SOURCE_DIR and create the corresponding destination directory
     relative_subdir="${subdir#"$SOURCE_DIR"/}"
     dst_subdir="$DEST_DIR/$relative_subdir"
@@ -85,13 +87,13 @@ find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$sampled_dirs" | while re
         mkdir -p "$dst_subdir"
     fi
     echo "Created directory: $dst_subdir"
-    ((sampled_dir_count++))
+    ((copied_dir_count++))
 
-    # Find and sample .pkl files, then copy each sampled file
+    # Find and copy a percentage of .pkl files
     total_files=$(find "$subdir" -type f -name "*.pkl" | wc -l)
-    sampled_files=$(echo "$total_files * $file_sample_percentage" | bc | awk '{print int($1+0.5)}')
+    files_to_copy=$(echo "$total_files * $file_copy_percentage" | bc | awk '{print int($1+0.5)}')
 
-    find "$subdir" -type f -name "*.pkl" | shuf -n "$sampled_files" | while read -r file; do
+    find "$subdir" -type f -name "*.pkl" | shuf -n "$files_to_copy" | while read -r file; do
         # Define the destination file path to maintain directory structure
         dst_file="$dst_subdir/${file##*/}"
         echo "Copying $file to $dst_file"
@@ -100,7 +102,7 @@ find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$sampled_dirs" | while re
         else
             cp "$file" "$dst_file"
         fi
-        ((sampled_file_count++))
+        ((copied_file_count++))
     done
 done
 
@@ -108,21 +110,21 @@ done
 readme_file="$DEST_DIR/README.md"
 if [ "$DRYRUN" == false ]; then
     {
-        echo "# Simprod Histograms"
+        echo "# Simprod Job Histograms"
         echo
-        echo "This directory contains a sampled subset of histogram data files."
+        echo "This directory contains a subset of job histogram data files."
         echo
         echo "### Source Information"
         echo "- **Source Directory**: $SOURCE_DIR"
-        echo "- **Sampling Parameters**: $(echo "$dir_sample_percentage * 100" | bc)% of directories and $(echo "$file_sample_percentage * 100" | bc)% of .pkl files within each selected directory."
+        echo "- **Copy Parameters**: $(echo "$dir_copy_percentage * 100" | bc)% of directories and $(echo "$file_copy_percentage * 100" | bc)% of .pkl files within each selected directory."
         echo
         echo "### Destination Information"
         echo "- **Destination Directory**: $DEST_DIR"
-        echo "- **Total Sampled Directories**: $sampled_dir_count"
-        echo "- **Total Sampled .pkl Files**: $sampled_file_count"
+        echo "- **Total Copied Directories**: $copied_dir_count"
+        echo "- **Total Copied .pkl Files**: $copied_file_count"
     } >>"$readme_file"
 else
     echo "[DRYRUN] Writing README.md to $readme_file"
 fi
 
-echo "Sampling and copying process complete. Summary written to $DEST_DIR/README.md."
+echo "Copying process complete. Summary written to $DEST_DIR/README.md."
