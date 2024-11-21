@@ -221,6 +221,9 @@ jobs:
       - name: Create source dataset dirs/files
         run: |
           set -euo pipefail
+          precreate_ct=0
+          max_to_precreate=2
+          
           dataset_dpaths=(
             /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}
           )
@@ -236,17 +239,16 @@ jobs:
           
             # pre-create some of these files in the destination
             if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
-              echo "creating 'existing' histo file (75% chance)"
-              # check that this histo would be touched by the script (then only do it 75% of the time)
-              if [[ "$dpath" == "${{ matrix.src_path }}"* ]] && (( RANDOM % 100 < 75 )); then
+              # check that this histo would be touched by the script (and only make some of these)
+              if [[ "$dpath" == "${{ matrix.src_path }}"* ]] && (( precreate_ct < max_to_precreate )); then
+                echo "creating 'existing' histo file"
                 relative_path="${dpath#*/sim/}"
                 dest_dataset_dir="$DEST_DIR/sim/$relative_path"
                 mkdir -p "$dest_dataset_dir"
                 set -x
                 touch "$dest_dataset_dir"/"$(basename "$dest_dataset_dir").histo.hdf5"
                 set +x
-              else
-                echo "no file made :o)"
+                (( precreate_ct++ ))
               fi
             fi
           
