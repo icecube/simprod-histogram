@@ -267,7 +267,7 @@ jobs:
             force_flag=""
           fi
           set -x
-          ./cp-dataset-histos.sh ${{ matrix.base_path }} ${{ matrix.dest_dir }} $force_flag
+          ./scripts/cp-dataset-histos.sh ${{ matrix.base_path }} ${{ matrix.dest_dir }} $force_flag
 
       - name: Validate copied histograms
         run: |
