@@ -21,7 +21,8 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - uses: WIPACrepo/wipac-dev-py-setup-action@v4.2
         with:
-          python_min: 3.9
+          python_min: 3.11
+          python_max: 3.11
           pypi_name: icecube-simprod-histogram
           author: IceCube
           author_email: developers@icecube.wisc.edu
@@ -41,8 +42,6 @@ jobs:
       - uses: actions/checkout@v3
       - id: versions
         uses: WIPACrepo/wipac-dev-py-versions-action@v2.5
-        with:
-          range: ">=3.12"
 
   flake8:
     needs: [ py-versions ]
@@ -83,10 +82,12 @@ jobs:
       - uses: actions/setup-python@v4
       - name: Run Ruff for code formatting
         run: |
+          set -euo pipefail
           pip install ruff
           ruff check --select C408 --fix . --unsafe-fixes
       - name: Commit formatted code
         run: |
+          set -euo pipefail
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
@@ -94,7 +95,7 @@ jobs:
           git push || true
 
   ###########################################################################
-  # UNIT TESTS
+  # TESTS
   ###########################################################################
 
   unit-tests:
@@ -109,11 +110,92 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.py3 }}
-      - run: |
+      - name: install
+        run: |
+          set -euo pipefail
           pip install .[tests]
       - name: Run unit tests
         run: |
+          set -euo pipefail
           pytest -vvv tests/unit/
+
+  test-wrapper-script:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        max_num_datasets:
+          - 1
+          - 25
+          - 100  # aka all of them, currently, there are 48
+        base_path:
+          - /tmp/data/sim/Upgrade/2022/generated/neutrino-generator/88888
+          - /tmp/data/sim/IceCube/2023/filtered/CORSIKA
+          - /tmp/data/sim/Upgrade/2022/filtered
+          - /tmp/data/sim/IceCube/2023
+          - /tmp/data/sim/Upgrade
+          - /tmp/data/sim
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+      - name: Create a mock dataset structure
+        run: |
+          set -euo pipefail
+          job_range_dpaths=(
+            /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}/{00-11,22-33,44-55}
+          )
+
+          # Create directories and conditionally populate files
+          for dpath in "${job_range_dpaths[@]}"; do
+            mkdir -p "$dpath"/histos/
+            # create 1-5 pkl files
+            for i in $( seq 1 "$(( (RANDOM % 5) + 1 ))" ); do
+              random_file=$(find "tests/data/simprod-histograms" -type f -name "*.pkl" | shuf -n 1)
+              cp "$random_file" "$dpath/histos/histo_$i.pkl"
+            done
+          done
+
+      - name: Look at filetree (before)
+        run: |
+          set -euo pipefail
+          tree /tmp/data/sim/
+
+      - name: Run script with matrix parameters
+        run: |
+          set -euo pipefail
+          set -x
+          ./resources/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.max_num_datasets }}
+
+      - name: Validate script execution
+        run: |
+          set -euo pipefail
+          echo "Max num of datasets: ${{ matrix.max_num_datasets }}"
+          
+          # Count dataset directories containing at least one "*.histo.hdf5" file
+          available_datasets=$(find ${{ matrix.base_path }} -type d -regex ".*/[0-9]+-[0-9]+$" -exec dirname {} \; | sort -u | wc -l)
+          echo "Available datasets: $available_datasets"
+
+          # Use the lesser of available_datasets and num_datasets for validation
+          expected_num_datasets=$(( available_datasets < ${{ matrix.max_num_datasets }} ? available_datasets : ${{ matrix.max_num_datasets }} ))
+          echo "Expected datasets: $expected_num_datasets"
+
+          # Check processed count
+          processed_count=$(find ${{ matrix.base_path }} -name '*.histo.hdf5' | wc -l)
+          echo "Processed count: $processed_count"
+
+          if [[ $processed_count -ne $expected_num_datasets ]]; then
+            echo "Script did not process the expected number of datasets!"
+            exit 1
+          fi
+
+          echo "All tests passed."
+
+      - name: Look at filetree (after)
+        run: |
+          set -euo pipefail
+          tree /tmp/data/sim/
 
   ###########################################################################
   # RELEASE
@@ -121,7 +203,7 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/main'
-    needs: [ py-setup, flake8, mypy, code-format, unit-tests ]
+    needs: [ py-setup, flake8, mypy, code-format, unit-tests, test-wrapper-script ]
     runs-on: ubuntu-latest
     concurrency: release  # prevent any possible race conditions
     steps:

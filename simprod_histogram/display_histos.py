@@ -92,7 +92,7 @@ def main():
     parser.add_argument(
         "path",
         type=Path,
-        help="the dataset directory to grab pickled histograms",
+        help="the path to the histogram file (pickle, json, or hdf5)",
     )
     args = parser.parse_args()
 
