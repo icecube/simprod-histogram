@@ -167,6 +167,8 @@ jobs:
       - name: Validate script execution
         run: |
           set -euo pipefail
+          echo "Max num of datasets: ${{ matrix.max_num_datasets }}"
+          
           # Count dataset directories containing at least one "*.histo.hdf5" file
           available_datasets=$(find ${{ matrix.base_path }} -type d -regex ".*/[0-9]+-[0-9]+$" -exec dirname {} \; | sort -u | wc -l)
           echo "Available datasets: $available_datasets"
