@@ -235,6 +235,7 @@ jobs:
               if (( RANDOM % 100 < 25 )); then
                 relative_path="${dpath#*/sim/}"
                 dest_dataset_dir="${{ matrix.dest_dir }}/sim/$relative_path"
+                mkdir -p "$dest_dataset_dir"  
                 touch "$dest_dataset_dir"/"$(basename "$dest_dataset_dir").histo.hdf5"
               fi
             fi
