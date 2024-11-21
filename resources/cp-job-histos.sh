@@ -5,40 +5,40 @@ set -euo pipefail
 # Script Name: Simprod Job Histogram Copier
 #
 # Description: This script copies a percentage of directories and `.pkl` files from
-#              "*/histos" directories in the specified source directory. These
+#              "*/histos" directories in the specified dataset directory. These
 #              "histos" directories contain **job-level histograms**, not dataset-level
 #              histograms. The script preserves the directory structure while copying
 #              the data to a destination directory in the user's home folder. An option
 #              for a dry run is provided to preview the actions without making any changes.
 #
-# Usage:       cp-job-histos.sh <SOURCE_DIR> [--dryrun]
+# Usage:       cp-job-histos.sh <DATASET_DIR> [--dryrun]
 #
 # Parameters:
-#     SOURCE_DIR : The source directory containing the "*/histos" directories to copy from.
-#     --dryrun   : Optional flag that, if provided, skips actual file and directory operations,
-#                  outputting actions to be taken without modifying any files.
+#     DATASET_DIR : The dataset directory containing the "*/histos" directories to copy from.
+#     --dryrun    : Optional flag that, if provided, skips actual file and directory operations,
+#                   outputting actions to be taken without modifying any files.
 #
 # Notes:
 #     - Copy-percentages for directories and files are set to 10% by default.
 #     - A README.md summary file is created in the destination directory, logging
-#       the source information, parameters, and resulting file statistics.
+#       the dataset directory, parameters, and resulting file statistics.
 #     - This script only handles job histograms (e.g., `.pkl` files within the
-#       "*/histos" directories) and excludes dataset histograms.
+#       "*/histos" directories) and excludes dataset-level histograms.
 ########################################################################################
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <SOURCE_DIR> [--dryrun]"
+    echo "Usage: $0 <DATASET_DIR> [--dryrun]"
     exit 1
 fi
 
 ########################################################################################
 
-# Verify that the provided SOURCE_DIR exists and is a directory
+# Verify that the provided DATASET_DIR exists and is a directory
 if [ ! -d "$1" ]; then
-    echo "Error: The specified source directory '$1' does not exist or is not a directory."
+    echo "Error: The specified dataset directory '$1' does not exist or is not a directory."
     exit 1
 fi
-SOURCE_DIR=$(realpath "$1")
+DATASET_DIR=$(realpath "$1")
 
 # Determine if the --dryrun flag is provided
 DRYRUN=false
@@ -48,7 +48,7 @@ fi
 
 ########################################################################################
 
-# Assign the source directory and force destination to the user's home directory
+# Assign the dataset directory and force destination to the user's home directory
 DEST_DIR=$(realpath "$HOME/simprod-histograms") # Define the destination under the user's home directory
 
 dir_copy_percentage=0.1  # 10% of directories
@@ -57,7 +57,7 @@ file_copy_percentage=0.1 # 10% of .pkl files in each selected directory
 ########################################################################################
 
 echo "Starting the copying process for Simprod Job Histograms..."
-echo "Source directory: $SOURCE_DIR"
+echo "Dataset directory: $DATASET_DIR"
 echo "Destination directory: $DEST_DIR"
 echo "Dry run: $DRYRUN"
 echo "Copying $(echo "$dir_copy_percentage * 100" | bc)% of directories and $(echo "$file_copy_percentage * 100" | bc)% of .pkl files within each directory."
@@ -74,12 +74,12 @@ copied_dir_count=0
 copied_file_count=0
 
 # Find all directories matching "*/histos" and copy a percentage of them
-total_dirs=$(find "$SOURCE_DIR" -type d -path "*/histos" | wc -l)
+total_dirs=$(find "$DATASET_DIR" -type d -path "*/histos" | wc -l)
 dirs_to_copy=$(echo "$total_dirs * $dir_copy_percentage" | bc | awk '{print int($1+0.5)}')
 
-find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$dirs_to_copy" | while read -r subdir; do
-    # Calculate the relative path from SOURCE_DIR and create the corresponding destination directory
-    relative_subdir="${subdir#"$SOURCE_DIR"/}"
+find "$DATASET_DIR" -type d -path "*/histos" | shuf -n "$dirs_to_copy" | while read -r subdir; do
+    # Calculate the relative path from DATASET_DIR and create the corresponding destination directory
+    relative_subdir="${subdir#"$DATASET_DIR"/}"
     dst_subdir="$DEST_DIR/$relative_subdir"
     if [ "$DRYRUN" == true ]; then
         echo "[DRYRUN] mkdir -p $dst_subdir"
@@ -115,7 +115,7 @@ if [ "$DRYRUN" == false ]; then
         echo "This directory contains a subset of job histogram data files."
         echo
         echo "### Source Information"
-        echo "- **Source Directory**: $SOURCE_DIR"
+        echo "- **Dataset Directory**: $DATASET_DIR"
         echo "- **Copy Parameters**: $(echo "$dir_copy_percentage * 100" | bc)% of directories and $(echo "$file_copy_percentage * 100" | bc)% of .pkl files within each selected directory."
         echo
         echo "### Destination Information"
