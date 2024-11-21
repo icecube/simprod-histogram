@@ -119,16 +119,16 @@ jobs:
           set -euo pipefail
           pytest -vvv tests/unit/
 
-  test-wrapper-script:
+  test-sample-each-dataset-sh:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         max_num_datasets:
           - 1
-          - 25
+          - 75
           - 100  # aka all of them, currently, there are 48
-        base_path:
+        src_path:
           - /tmp/data/sim/Upgrade/2022/generated/neutrino-generator/88888
           - /tmp/data/sim/IceCube/2023/filtered/CORSIKA
           - /tmp/data/sim/Upgrade/2022/filtered
@@ -140,14 +140,14 @@ jobs:
         uses: actions/checkout@v3
       - name: Set up Python environment
         uses: actions/setup-python@v4
-      - name: Create a mock dataset structure
+
+      - name: Create source dataset dirs/files
         run: |
           set -euo pipefail
           job_range_dpaths=(
             /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}/{00-11,22-33,44-55}
           )
 
-          # Create directories and conditionally populate files
           for dpath in "${job_range_dpaths[@]}"; do
             mkdir -p "$dpath"/histos/
             # create 1-5 pkl files
@@ -162,11 +162,11 @@ jobs:
           set -euo pipefail
           tree /tmp/data/sim/
 
-      - name: Run script with matrix parameters
+      - name: Run script
         run: |
           set -euo pipefail
           set -x
-          ./resources/sample-each-dataset.sh ${{ matrix.base_path }} 0.5 ${{ matrix.max_num_datasets }}
+          ./scripts/sample-each-dataset.sh ${{ matrix.src_path }} 0.5 ${{ matrix.max_num_datasets }}
 
       - name: Validate script execution
         run: |
@@ -174,7 +174,7 @@ jobs:
           echo "Max num of datasets: ${{ matrix.max_num_datasets }}"
           
           # Count dataset directories containing at least one "*.histo.hdf5" file
-          available_datasets=$(find ${{ matrix.base_path }} -type d -regex ".*/[0-9]+-[0-9]+$" -exec dirname {} \; | sort -u | wc -l)
+          available_datasets=$(find ${{ matrix.src_path }} -type d -regex ".*/[0-9]+-[0-9]+$" -exec dirname {} \; | sort -u | wc -l)
           echo "Available datasets: $available_datasets"
 
           # Use the lesser of available_datasets and num_datasets for validation
@@ -182,7 +182,7 @@ jobs:
           echo "Expected datasets: $expected_num_datasets"
 
           # Check processed count
-          processed_count=$(find ${{ matrix.base_path }} -name '*.histo.hdf5' | wc -l)
+          processed_count=$(find ${{ matrix.src_path }} -name '*.histo.hdf5' | wc -l)
           echo "Processed count: $processed_count"
 
           if [[ $processed_count -ne $expected_num_datasets ]]; then
@@ -197,13 +197,151 @@ jobs:
           set -euo pipefail
           tree /tmp/data/sim/
 
+  test-cp-dataset-histos-sh:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        prev_histos_setting:
+          - none
+          - overwrite
+          - keep
+        src_path:
+          - /tmp/data/sim/IceCube/2023/generated/neutrino-generator
+          - /tmp/data/sim/Upgrade/2022/
+    env:
+      DEST_DIR: /tmp/mycopy
+      OLD_FILE_MODTIME: 0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+
+      - name: Create source dataset dirs/files
+        run: |
+          set -euo pipefail
+          precreate_ct=0
+          max_to_precreate=2
+          
+          dataset_dpaths=(
+            /tmp/data/sim/{IceCube,Upgrade}/{2022,2023}/{generated,filtered}/{CORSIKA,neutrino-generator}/{77777,88888,99999}
+          )
+
+          for dpath in "${dataset_dpaths[@]}"; do
+            echo
+            echo "adding: $dpath"
+            histo="$dpath"/"$(basename $dpath).histo.hdf5"
+            mkdir -p $(dirname $histo)
+            set -x
+            touch $histo
+            set +x
+          
+            # pre-create some of these files in the destination
+            if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
+              # check that this histo would be touched by the script (and only make some of these)
+              if [[ "$dpath" == "${{ matrix.src_path }}"* ]] && (( precreate_ct < max_to_precreate )); then
+                echo "creating 'existing' histo file"
+                relative_path="${dpath#*/sim/}"
+                dest_dataset_dir="$DEST_DIR/sim/$relative_path"
+                mkdir -p "$dest_dataset_dir"
+                set -x
+                touch "$dest_dataset_dir"/"$(basename "$dest_dataset_dir").histo.hdf5"
+                (( ++precreate_ct ))
+                set +x
+              fi
+            fi
+          
+          done
+          
+          # set the oldest file's mod time
+          if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" || "${{ matrix.prev_histos_setting }}" == "keep" ]]; then
+            oldest_modtime=$(find "$DEST_DIR" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
+            echo "OLD_FILE_MODTIME=$oldest_modtime" >> $GITHUB_ENV
+            sleep 5 # wait b/c the test can take < 1 sec 
+          fi
+
+      - name: Look at src filetree (before)
+        run: |
+          set -euo pipefail
+          tree /tmp/data/sim/
+
+      - name: Look at dest filetree (before)
+        run: |
+          set -euo pipefail
+          tree $DEST_DIR || echo "no files here"
+
+      - name: Run script
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.prev_histos_setting }}" == "overwrite" ]]; then
+            force_flag="--force"
+          else
+            force_flag=""
+          fi
+          set -x
+          ./scripts/cp-dataset-histos.sh ${{ matrix.src_path }} $DEST_DIR $force_flag
+
+      - name: Validate copied histograms
+        run: |
+          set -euo pipefail
+
+          src_count=$(find ${{ matrix.src_path }} -name "*.histo.hdf5" | wc -l)
+          dest_count=$(find $DEST_DIR -name "*.histo.hdf5" | wc -l)
+          echo "Source histograms: $src_count"
+          echo "Copied histograms: $dest_count"
+          if [[ $src_count -ne $dest_count ]]; then
+            echo "Copied histograms count ($dest_count) does not match source histograms count ($src_count)!"
+            exit 1
+          fi
+          
+          # check the overwriting settings
+          oldest_modtime=$(find "$DEST_DIR" -name "*.histo.hdf5" -type f -exec stat --format='%Y' {} + | sort -n | head -1)
+          echo "Oldest histo file modtime: $oldest_modtime"
+          echo "Previous oldest histo file modtime: $OLD_FILE_MODTIME"
+          case "${{ matrix.prev_histos_setting }}" in
+            none)
+              # oldest modtime should be younger (greater) than previously-stored value
+              if [[ $oldest_modtime -le $OLD_FILE_MODTIME ]]; then
+                echo "ERROR: there is an older file in here!" >&2
+                exit 1
+              fi
+              ;;
+            overwrite)
+              # oldest modtime should be younger (greater) than previously-stored value
+              if [[ $oldest_modtime -le $OLD_FILE_MODTIME ]]; then
+                echo "ERROR: there is an older file in here! aka script didn't overwrite" >&2
+                exit 1
+              fi
+              ;;
+            keep)
+              # oldest modtime should be the previously-stored value
+              if [[ $oldest_modtime -ne $OLD_FILE_MODTIME ]]; then
+                echo "ERROR: there is no older file in here! aka the scrip did overwrite" >&2
+                exit 1
+              fi
+              ;;
+            *)
+              echo "Error: Unknown value for prev_histos_setting: $prev_histos_setting" >&2
+              exit 1
+              ;;
+          esac
+
+          echo "All tests passed for src_path=${{ matrix.src_path }} and dest_dir=$DEST_DIR."
+
+      - name: Look at dest filetree (after)
+        run: |
+          set -euo pipefail
+          tree $DEST_DIR
+
+
   ###########################################################################
   # RELEASE
   ###########################################################################
 
   release:
     if: github.ref == 'refs/heads/main'
-    needs: [ py-setup, flake8, mypy, code-format, unit-tests, test-wrapper-script ]
+    needs: [ py-setup, flake8, mypy, code-format, unit-tests, test-sample-each-dataset-sh, test-cp-dataset-histos-sh ]
     runs-on: ubuntu-latest
     concurrency: release  # prevent any possible race conditions
     steps:
