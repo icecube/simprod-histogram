@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 
-def calculate(dirpath: str) -> int:
+def calculate(dirpath: Path) -> int:
     """
     Calculate the filetree depth from dirpath to the dataset directories.
 
@@ -25,8 +25,6 @@ def calculate(dirpath: str) -> int:
             1. using 'realpath' (ex: /data/sim/IceCube/... -> /mnt/lfs6/sim/IceCube/...)
             2: running in a testbed directory (ex: /home/eevans/test/data/sim/IceCube/...)
     """
-    dirpath = Path(dirpath)
-
     SIM = "sim"  # as in '/data/sim' (or a local tree '/home/.../sim/...')
     N_SEGMENTS_BASE_TO_DATASET = 5
 
@@ -46,4 +44,4 @@ def calculate(dirpath: str) -> int:
 
 
 if __name__ == "__main__":
-    print(calculate(sys.argv[1]))
+    print(calculate(Path(sys.argv[1])))
