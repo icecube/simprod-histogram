@@ -2,6 +2,15 @@
 
 
 
+## v0.2.1 (2025-04-15)
+
+###  
+
+* fixes for mypy ([`f623958`](https://github.com/icecube/simprod-histogram/commit/f6239580daf74f1f4fe8dfcd3190a23aed88fe2c))
+
+* Use `pypa/gh-action-pypi-publish@v1.12.4` ([`5709f20`](https://github.com/icecube/simprod-histogram/commit/5709f2026abeccf52ebc412850654ca901712950))
+
+
 ## v0.2.0 (2024-11-21)
 
 ### [minor]
