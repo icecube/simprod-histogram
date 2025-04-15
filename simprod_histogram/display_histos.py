@@ -17,7 +17,7 @@ def from_hdf5(fpath: Path):
 
     with h5py.File(fpath) as f:
         for key in f.keys():
-            sub_dict = {}
+            sub_dict: dict = {}
 
             # Read each dataset within the group
             for sub_key, item in f[key].items():
